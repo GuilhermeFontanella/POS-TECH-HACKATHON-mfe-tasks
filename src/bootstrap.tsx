@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 //import App from "./App";
-import Settings from "./Settings/Settings";
+import Settings from "./Settings/Tasks";
 
 class SettingsMFE extends HTMLElement {
     private root: ReactDOM.Root | null = null;

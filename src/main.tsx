@@ -1,11 +1,12 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import Tasks from './Tasks/Tasks'
 //import './index.css'
 //import App from './App.tsx'
-import Settings from './Settings/Settings.tsx'
+
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Settings />
+    <Tasks />
   </StrictMode>,
 )
