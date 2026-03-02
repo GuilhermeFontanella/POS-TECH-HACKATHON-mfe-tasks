@@ -23,5 +23,11 @@ export default defineConfig({
     target: 'esnext',
     minify: false,
     cssCodeSplit: false,
+  },
+  optimizeDeps: {
+    exclude: [
+      '@formkit/drag-and-drop',
+      '@formkit/drag-and-drop/solid'
+  ],
   }
 });
