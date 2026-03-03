@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ant-design/happy-work-theme": "^2.0.0",
+    "@ant-design/icons": "^6.1.0",
     "@formkit/drag-and-drop": "^0.5.3",
     "antd": "^6.3.1",
     "react": "^19.2.0",

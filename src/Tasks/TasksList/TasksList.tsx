@@ -1,14 +1,12 @@
-import { dragAndDrop } from '@formkit/drag-and-drop';
-import * as styles from './TasksList.css';
+import * as classes from './TasksList.css';
 import { useState } from 'react';
 import { useDragAndDrop } from '@formkit/drag-and-drop/react';
-import { Button, Card, Cascader, Checkbox, Col, ColorPicker, DatePicker, Input, InputNumber, Modal, Radio, Row, Select, Switch, TreeSelect } from 'antd';
-
+import { Button, Card, Cascader, Checkbox, Col, ColorPicker, DatePicker, Input, InputNumber, Modal, Radio, Row, Select, Switch, Tooltip, TreeSelect, Typography } from 'antd';
+import { HappyProvider } from '@ant-design/happy-work-theme';
 import { Form } from 'antd';
 import TextArea from 'antd/es/input/TextArea';
+import { CaretRightOutlined, CheckOutlined, ClockCircleOutlined, EyeOutlined, PauseCircleOutlined, PauseOutlined, PlayCircleOutlined, SearchOutlined } from '@ant-design/icons';
 const { RangePicker } = DatePicker;
-
-const config = { sortable: false }
 
 const SettingsList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,29 +40,68 @@ const SettingsList = () => {
 
   return (
     <>
-      <Row className="kanban-board" style={{background: "#f0f0f0", padding: "20px", height: '100vh'}}>
-        <Col span={8}>
-          <ul style={{background: 'green', height: '100%', listStyle: 'none', padding: 10}} ref={todoList}>{todos.map((todo) => (
-                  <li className="kanban-item" style={{padding: 5}} key={todo}>
-                    <Card onClick={showModal} title={todo} variant="borderless"/>
-                  </li>
-                ))}
+      <Row className="kanban-board" style={{background: "#f0f0f0", padding: "20px", height: 'fit-content', display: 'flex', justifyContent: 'center', maxWidth: '1200px', minWidth: 'fit-content', borderRadius: '8px', border: '1px solid #d9d9d9', margin: '0 auto'}}>
+        <Col span={6}>
+          <Typography.Title level={3} style={{ marginLeft: 16 }}>
+            Pendente
+          </Typography.Title>
+          <ul style={{ height: '100%', listStyle: 'none', padding: 10}} ref={todoList}>{todos.map((todo) => (
+            <li className="kanban-item" style={{padding: 5}} key={todo}>
+              <Card title={todo} variant="borderless" extra={
+                <Button className={classes.actionButton} onClick={() => {}} type="primary" icon={<CaretRightOutlined /> } size={'medium'}>
+                  <span className={classes.actionText}>Iniciar</span>
+                </Button>
+              }><div onClick={showModal} className={classes.actionButton}>
+                teste
+                <Tooltip title="Visualizar detalhes">
+                  <Button className={classes.actionText} shape="circle" type='link' icon={<EyeOutlined />} />
+                </Tooltip>
+              </div></Card>
+            </li>
+          ))}
           </ul>
         </Col>
-        <Col span={8}>
-          <ul style={{background: 'red', height: '100%', listStyle: 'none', padding: 10}} ref={doingList}>{doing.map((doing) => (
-                  <li className="kanban-item" style={{padding: 5}} key={doing}>
-                    <Card onClick={showModal} title={doing} variant="borderless"/>
-                  </li>
-                ))}
+        <Col span={6}>
+          <Typography.Title level={3} style={{ marginLeft: 16 }}>
+            Em progresso
+          </Typography.Title>
+          <ul style={{ height: '100%', listStyle: 'none', padding: 10}} ref={doingList}>{doing.map((doing) => (
+            <li className="kanban-item" style={{padding: 5}} key={doing}>
+              <Card  title={
+                <Tooltip placement="topLeft" title={doing}>
+                    {doing}
+                  </Tooltip>
+              } variant="borderless" extra={
+                <>
+                <div style={{ display: 'flex', gap: 8, margin: 'auto' }}>
+                  <HappyProvider>
+                    <Button className={classes.actionButton} type="primary"  icon={<CheckOutlined /> } size={'medium'}>
+                      <span className={classes.actionText}>Finalizar</span>
+                    </Button>
+                  </HappyProvider>
+                  <Tooltip title="Pausar tarefa">
+                    <Button className={classes.actionButton} type="primary" icon={<ClockCircleOutlined />} size={'medium'}>
+                      <span className={classes.actionText}>10:23</span>
+                    </Button>
+                  </Tooltip>
+                </div>
+                </>
+              }>
+                <div onClick={showModal}>teste</div>
+              </Card>
+            </li>
+          ))}
           </ul>
         </Col>
-        <Col span={8}>
-          <ul style={{background: 'blue', height: '100%', listStyle: 'none', padding: 10}} ref={doneList}>{dones.map((done) => (
-                  <li className="kanban-item" key={done}>
-                    <Card onClick={showModal} title={done} variant="borderless"/>
-                  </li>
-                ))}
+        <Col span={6}>
+          <Typography.Title level={3} style={{ marginLeft: 16 }}>
+            Feito
+          </Typography.Title>
+          <ul style={{ height: '100%', listStyle: 'none', padding: 10}} ref={doneList}>{dones.map((done) => (
+            <li className="kanban-item" key={done} style={{padding: 5}}>
+              <Card onClick={showModal} title={done} variant="borderless" />
+            </li>
+          ))}
           </ul>
         </Col>
       </Row>
