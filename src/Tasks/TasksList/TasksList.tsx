@@ -8,20 +8,45 @@ import { useLockBodyScroll } from '../../hooks/useLockBodyScroll';
 import CustomModal from '../../components/customModal/CustomModal';
 import TaskDetails from './taskDetails/TaskDetails';
 
+const todoItems: any[] = [
+  {
+    id: 1,
+    title: 'Titulo',
+    summary: 'Resumo da tarefa',
+    description: 'Descrição mais longa',
+    estimatedTime: 10,
+    tasks: [
+      { 
+        id: 1,
+        title: 'titulo da tarefa',
+        summary: 'resumo da tarefa secundaria',
+        estimatedTime: 5,
+        deadline: '10/03/2026 - 23:59:59',
+        completed: true
+      },
+    ],
+    deadline: '10/03/2026 - 23:59:59',
+    completed: false,
+    dateCompletation: null,
+    dateCreation: '09/03/2026 - 23:00:00'
+  }
+]
+
 const SettingsList = () => {
   const { isMobile } = useDevice()
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPauseModalOpen, setIsPauseModalOpen] = useState(false);
   const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const todoItems = [
-    "Schedule perm",
-    "Rewind VHS tapes",
-    "Make change for the arcade",
-    "Get disposable camera developed",
-    "Learn C++",
-    "Return Nintendo Power Glove",
-  ];
+  const [cardSelected, setCardSelected] = useState<any | null>(null)
+  // const todoItems = [
+  //   "Schedule perm",
+  //   "Rewind VHS tapes",
+  //   "Make change for the arcade",
+  //   "Get disposable camera developed",
+  //   "Learn C++",
+  //   "Return Nintendo Power Glove",
+  // ];
 
   const doingItems: any[] = [];
 
@@ -52,8 +77,9 @@ const SettingsList = () => {
 
   const handleModalType = () => {
     if (isDetailsModalOpen) {
+      console.log(todoItems.find(e => e.id === cardSelected))
       return (
-        <TaskDetails isMobile={isMobile} />
+        <TaskDetails isMobile={isMobile} data={todoItems.find(e => e.id === cardSelected)} />
       );
     }
     else if (isFinishModalOpen) {
@@ -84,6 +110,8 @@ const SettingsList = () => {
           onModalOpen={showModal}
           columnIndex={0}
           onDetailsTask={setIsDetailsModalOpen}
+          onSelectTask={setCardSelected}
+          
           />
         </Col>
         <Col flex={isMobile ? '280px' : undefined} xs={24} md={6}>
@@ -97,7 +125,7 @@ const SettingsList = () => {
           onFinishTask={setIsFinishModalOpen}
           onPauseTask={setIsPauseModalOpen}
           onDetailsTask={setIsDetailsModalOpen}
-          
+          onSelectTask={setCardSelected}
           />
         </Col>
         <Col flex={isMobile ? '280px' : undefined} xs={24} md={6}>
@@ -109,6 +137,7 @@ const SettingsList = () => {
           onModalOpen={showModal}
           columnIndex={2}
           onDetailsTask={setIsDetailsModalOpen}
+          onSelectTask={setCardSelected}
           />
         </Col>
       </Row>
@@ -117,7 +146,8 @@ const SettingsList = () => {
       isModalOpen={isModalOpen}
       handleOk={handleOk}
       handleCancel={handleCancel}
-      isMobile={isMobile} />
+      isMobile={isMobile}
+      data={todoItems.find(e => e.id === cardSelected)} />
     </>
   );
 }

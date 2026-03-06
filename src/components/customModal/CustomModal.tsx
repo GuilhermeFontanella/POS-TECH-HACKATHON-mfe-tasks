@@ -7,6 +7,7 @@ interface CustomModalProps {
     handleOk: () => void;
     handleCancel: () => void;
     isMobile: boolean;
+    data: any; // TODO TIPAR DADOS DA TASK
 }
 
 const CustomModal = ({ 
@@ -14,7 +15,8 @@ const CustomModal = ({
     isModalOpen,  
     handleOk, 
     handleCancel, 
-    isMobile 
+    isMobile,
+    data 
 }: CustomModalProps) => {
 
   useEffect(() => {
@@ -27,7 +29,7 @@ const CustomModal = ({
         centered={!isMobile}
         footer={null}
         style={isMobile ? { top: 0, padding: 0 } : undefined}
-        title="Basic Modal"
+        title={data?.title}
         closable={{ 'aria-label': 'Custom Close Button' }}
         open={isModalOpen}
         onOk={handleOk}

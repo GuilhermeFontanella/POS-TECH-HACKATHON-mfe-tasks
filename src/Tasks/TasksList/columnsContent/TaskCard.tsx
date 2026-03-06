@@ -1,32 +1,30 @@
-import { Card, Tooltip, Button, Typography } from 'antd';
+import { Card, Tooltip, Button } from 'antd';
 import { HappyProvider } from '@ant-design/happy-work-theme';
 import { CheckOutlined, ClockCircleOutlined, CaretRightOutlined, EyeOutlined } from '@ant-design/icons';
 import * as classes from './ColumnsContent.css';
 
 interface TaskCardProps {
-    task: string;
+    data: any;
     columnIndex: number;
     isMobile: boolean;
     onModalOpen: (value: boolean) => void;
     onFinishTask?: (value: boolean) => void;
     onPauseTask?: (value: boolean) => void;
     onDetailsTask?: (value: boolean) => void;
+    onSelectTask?: (value: number) => void;
 }
 
-const TaskCard = ({ task, columnIndex, isMobile, onModalOpen, onFinishTask, onPauseTask, onDetailsTask }: TaskCardProps) => {
+const TaskCard = ({ data, columnIndex, isMobile, onModalOpen, onFinishTask, onPauseTask, onDetailsTask, onSelectTask }: TaskCardProps) => {
 
     const handleShowTitle = (text: string) => {
-        switch (columnIndex) {
-            case 0:
-                return text;
-            case 1:
-                return (
-                    <Tooltip placement="topLeft" title={text}>
-                        {text}
-                    </Tooltip>
-                );
-            case 2:
-                return text
+        if (columnIndex != 1) {
+            return text;
+        } else {
+            return (
+               <Tooltip placement="topLeft" title={text}>
+                    {text}
+                </Tooltip> 
+            );
         }
     }
 
@@ -70,10 +68,10 @@ const TaskCard = ({ task, columnIndex, isMobile, onModalOpen, onFinishTask, onPa
     return (
         <div className={classes.card}>
             <Card 
-            title={handleShowTitle(task)} 
+            title={handleShowTitle(data?.title)} 
             variant="borderless" 
             extra={handleCardButtons(columnIndex)}>
-                <div onClick={() => {onModalOpen(true); onDetailsTask?.(true)}} className={classes.actionButton} style={{width: '100%'}}>
+                <div onClick={() => {onModalOpen(true); onDetailsTask?.(true); onSelectTask?.(data?.id)}} className={classes.actionButton} style={{width: '100%'}}>
                     <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
                         <div>
                             <span style={{paddingRight: '4px', color: 'darkGray'}}>Resumo:</span>

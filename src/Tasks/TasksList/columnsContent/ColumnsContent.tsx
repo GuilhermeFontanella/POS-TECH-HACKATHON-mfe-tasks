@@ -11,6 +11,7 @@ interface ColumnsContentProps {
     onDetailsTask: (value: boolean) => void;
     columnIndex: number;
     ref: React.Ref<HTMLUListElement>;
+    onSelectTask?: (value: number) => void;
 }
 
 const ColumnsContent = ({ 
@@ -22,7 +23,8 @@ const ColumnsContent = ({
     onPauseTask,
     onDetailsTask,
     columnIndex,
-    ref
+    ref,
+    onSelectTask
 }: ColumnsContentProps) => {
     return (
         <>
@@ -32,13 +34,14 @@ const ColumnsContent = ({
             <ul style={{ height: '100%', listStyle: 'none', padding: 10 }} ref={ref}>{list.map((todo, index) => (
                 <li className="kanban-item" style={{ padding: 5 }} key={`${todo}-${index}`}>
                     <TaskCard 
-                    task={todo} 
+                    data={todo} 
                     columnIndex={columnIndex} 
                     isMobile={isMobile} 
                     onModalOpen={onModalOpen}
                     onFinishTask={onFinishTask}
                     onPauseTask={onPauseTask}
-                    onDetailsTask={(value) => onDetailsTask?.(value)} />
+                    onDetailsTask={(value) => onDetailsTask?.(value)}
+                    onSelectTask={onSelectTask} />
                 </li>
             ))}
             </ul>
