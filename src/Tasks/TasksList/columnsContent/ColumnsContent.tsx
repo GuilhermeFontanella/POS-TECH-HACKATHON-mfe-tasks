@@ -1,0 +1,49 @@
+import { Typography } from 'antd';
+import TaskCard from './TaskCard';
+
+interface ColumnsContentProps {
+    columnTitle: string;
+    isMobile: boolean;
+    list: any[];
+    onModalOpen: (value: boolean) => void;
+    onFinishTask?: (value: boolean) => void;
+    onPauseTask?: (value: boolean) => void;
+    onDetailsTask: (value: boolean) => void;
+    columnIndex: number;
+    ref: React.Ref<HTMLUListElement>;
+}
+
+const ColumnsContent = ({ 
+    columnTitle, 
+    isMobile, 
+    list, 
+    onModalOpen,
+    onFinishTask,
+    onPauseTask,
+    onDetailsTask,
+    columnIndex,
+    ref
+}: ColumnsContentProps) => {
+    return (
+        <>
+            <Typography.Title level={3} style={{ marginLeft: 16 }}>
+                {columnTitle}
+            </Typography.Title>
+            <ul style={{ height: '100%', listStyle: 'none', padding: 10 }} ref={ref}>{list.map((todo, index) => (
+                <li className="kanban-item" style={{ padding: 5 }} key={`${todo}-${index}`}>
+                    <TaskCard 
+                    task={todo} 
+                    columnIndex={columnIndex} 
+                    isMobile={isMobile} 
+                    onModalOpen={onModalOpen}
+                    onFinishTask={onFinishTask}
+                    onPauseTask={onPauseTask}
+                    onDetailsTask={(value) => onDetailsTask?.(value)} />
+                </li>
+            ))}
+            </ul>
+        </>
+    )
+}
+
+export default ColumnsContent;

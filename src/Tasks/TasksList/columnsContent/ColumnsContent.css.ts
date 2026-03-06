@@ -1,4 +1,14 @@
-import { style } from "@vanilla-extract/css";
+import { globalStyle, style } from '@vanilla-extract/css';
+
+export const kanbanItem = style({
+  padding: 5
+});
+
+export const card = style({});
+
+globalStyle(`${card} .ant-card-body`, {
+  padding: '8px 16px'
+});
 
 export const actionButton = style({
   display: 'inline-flex',
@@ -21,17 +31,4 @@ export const actionText = style({
       display: 'inline',
     },
   },
-});
-
-export const kanbanBoard = style({
-  background: "#f0f0f0",
-  padding: "20px",
-  height: 'fit-content',
-  display: 'flex',
-  justifyContent: 'center',
-  maxWidth: '1200px',
-  minWidth: 'fit-content',
-  borderRadius: '8px',
-  border: '1px solid #d9d9d9',
-  margin: '0 auto'
 });
