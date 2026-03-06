@@ -6,9 +6,9 @@ interface ColumnsContentProps {
     isMobile: boolean;
     list: any[];
     onModalOpen: (value: boolean) => void;
-    onFinishTask?: (value: boolean) => void;
-    onPauseTask?: (value: boolean) => void;
-    onDetailsTask: (value: boolean) => void;
+    onFinishTask?: () => void;
+    onPauseTask?: () => void;
+    onDetailsTask: () => void;
     columnIndex: number;
     ref: React.Ref<HTMLUListElement>;
     onSelectTask?: (value: number) => void;
@@ -40,7 +40,7 @@ const ColumnsContent = ({
                     onModalOpen={onModalOpen}
                     onFinishTask={onFinishTask}
                     onPauseTask={onPauseTask}
-                    onDetailsTask={(value) => onDetailsTask?.(value)}
+                    onDetailsTask={onDetailsTask}
                     onSelectTask={onSelectTask} />
                 </li>
             ))}

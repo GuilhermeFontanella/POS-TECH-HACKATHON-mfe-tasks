@@ -41,11 +41,9 @@ const TaskCard = ({ data, columnIndex, isMobile, onModalOpen, onFinishTask, onPa
                     <>
                         {!isMobile ? (
                             <div style={{ display: 'flex', gap: 8, margin: 'auto' }}>
-                                <HappyProvider>
                                 <Button className={classes.actionButton} type="primary" icon={<CheckOutlined />} size={'medium'} onClick={() => {onModalOpen(true); onFinishTask?.(true)}}>
                                     <span className={classes.actionText}>Finalizar</span>
                                 </Button>
-                                </HappyProvider>
                                 <Tooltip title="Pausar tarefa">
                                 <Button className={classes.actionButton} type="primary" icon={<ClockCircleOutlined />} size={'medium'} onClick={() => {onModalOpen(true); onPauseTask?.(true)}}>
                                     <span className={classes.actionText}>10:23</span>
@@ -54,9 +52,7 @@ const TaskCard = ({ data, columnIndex, isMobile, onModalOpen, onFinishTask, onPa
                             </div>
                         ) : (
                             <div style={{ display: 'flex', gap: 8, margin: 'auto' }}>
-                                <HappyProvider>
-                                    <Button type="primary" icon={<CheckOutlined />} size={'medium'} onClick={() => {onModalOpen(true); onFinishTask?.(true)}}/>
-                                </HappyProvider>
+                                <Button type="primary" icon={<CheckOutlined />} size={'medium'} onClick={() => {onModalOpen(true); onFinishTask?.(true)}}/>
                                 <Button type="primary" icon={<ClockCircleOutlined />} size={'medium'} onClick={() => {onModalOpen(true); onPauseTask?.(true)}}/>
                             </div>
                         )}

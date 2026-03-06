@@ -1,0 +1,51 @@
+import { Progress } from "antd"
+import { useEffect, useState } from "react";
+
+interface TimerProps {
+    timeRemaining: number;
+}
+
+const Timer = ({timeRemaining}: TimerProps) => {
+    const [time, setTime] = useState(timeRemaining);
+
+    const getRemainingPercentage = (remaining: number, total: number) => {
+        if (total === 0) return 0;
+        return Math.max((remaining / total) * 100, 0);
+    };
+
+    const formatCountdown = (ms: number) => {
+        const totalSeconds = Math.floor(ms / 1000);
+
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        const pad = (n: number) => n.toString().padStart(2, "0");
+
+        if (hours > 0) return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+        if (minutes > 0) return `${pad(minutes)}:${pad(seconds)}`;
+
+        return `${pad(seconds)}`;
+    };
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+        setTime(prev => Math.max(prev - 1000, 0));
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    const displayTime = formatCountdown(time);
+    const percent = getRemainingPercentage(time, timeRemaining);
+
+    useEffect(() => {
+        console.log(percent)
+    }, [percent])
+
+    return (
+        <Progress type="circle" percent={percent} format={() => displayTime} />
+    )
+}
+
+export default Timer;

@@ -1,12 +1,14 @@
 import * as classes from './TasksList.css';
 import { useState } from 'react';
 import { useDragAndDrop } from '@formkit/drag-and-drop/react';
-import { Col, Row } from 'antd';
+import { Col, Row, message  } from 'antd';
 import { useDevice } from '../../hooks/useDevice';
 import ColumnsContent from './columnsContent/ColumnsContent';
 import { useLockBodyScroll } from '../../hooks/useLockBodyScroll';
 import CustomModal from '../../components/customModal/CustomModal';
 import TaskDetails from './taskDetails/TaskDetails';
+import TaskFinish from './taskFinish/TaskFinish';
+import TaskPause from './taskPause/TaskPause';
 
 const todoItems: any[] = [
   {
@@ -30,30 +32,28 @@ const todoItems: any[] = [
     dateCompletation: null,
     dateCreation: '09/03/2026 - 23:00:00'
   }
-]
+];
+
+type ModalType = "details" | "finish" | "pause" | "completed" | null;
 
 const SettingsList = () => {
-  const { isMobile } = useDevice()
+  const { isMobile } = useDevice();
+  const [modalType, setModalType] = useState<ModalType>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isPauseModalOpen, setIsPauseModalOpen] = useState(false);
-  const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [cardSelected, setCardSelected] = useState<any | null>(null)
-  // const todoItems = [
-  //   "Schedule perm",
-  //   "Rewind VHS tapes",
-  //   "Make change for the arcade",
-  //   "Get disposable camera developed",
-  //   "Learn C++",
-  //   "Return Nintendo Power Glove",
-  // ];
-
+  const [cardSelected, setCardSelected] = useState<any | null>(null);
+  const [api, contextHolder] = message.useMessage();
+  const doneItems: any[] = [];
   const doingItems: any[] = [];
-
-  const doneItems = ["Pickup new mix-tape from Beth"];
   const [todoList, todos] = useDragAndDrop<HTMLUListElement, string>(todoItems, { group: "todoList" });
   const [doneList, dones] = useDragAndDrop<HTMLUListElement, string>(doneItems, { group: "todoList" });
   const [doingList, doing] = useDragAndDrop<HTMLUListElement, string>(doingItems, { group: "todoList" });
+
+  const openNotification = () => {
+    api.open({
+      type: 'success',
+      content: 'Alterações salvas'
+    })
+  }
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -63,40 +63,74 @@ const SettingsList = () => {
     setIsModalOpen(false);
   };
 
-  const handleCancel = () => {
-    setIsModalOpen(false);
-    setIsDetailsModalOpen(false);
-    setIsFinishModalOpen(false);
-    setIsPauseModalOpen(false);
-  };
-
   useLockBodyScroll({
-    isLocked: isModalOpen,
+    isLocked: !!modalType,
     enabled: isMobile
   });
 
   const handleModalType = () => {
-    if (isDetailsModalOpen) {
-      console.log(todoItems.find(e => e.id === cardSelected))
-      return (
-        <TaskDetails isMobile={isMobile} data={todoItems.find(e => e.id === cardSelected)} />
-      );
+    switch (modalType) {
+      case "details":
+        return (
+           <TaskDetails 
+            isMobile={isMobile} 
+            data={todoItems.find(e => e.id === cardSelected)}
+            onFormChange={() => {
+              //executa a chamada a api, dependendo do resultado exibe a notificação
+              // mock
+              openNotification();
+            }} 
+            />
+        );
+
+      case "finish":
+        return (
+          <TaskFinish
+            isMobile={isMobile}
+            data={doingItems.find(e => e.id === cardSelected)}
+            onFinishTask={() => {
+              // chama a função para encerrar a task, atualizar a lista de tasks e fechar o modal.
+
+              setModalType(null);
+
+            }}
+          />
+        );
+
+      case "pause":
+        /**
+         * MOVENDO O CARD PARA EM PROGRESSO
+         * Ao mover o card para a coluna de progresso o contador começará a correr e chamar a api para atualizar o campo da data de inicio
+         * e gravar na variavel de timer do redux para começar o contador.
+         * 
+         * CLICANDO EM FINISH 
+         * quando o usuario clicar em finish devo chamar a api para gravar a data de finalização, e mover o card para a coluna de finalizado e fechar o modal.
+         * 
+         * CLICANDO EM RESTART
+         * quando o usuario clicar em restart devo chamar a api para atualizar o tempo restante da tarefa, com isso a variavel gravada com o redux será atualizada. 
+         * obs* O timer consome o valor da variavel armazenada no redux.
+         * obs* Quando o timer chegar a zero, devo disparar uma notificação pro usuario avisando do termino da tarefa dando a opção de finalizar a 
+         * tarefa ou reinicar o contador. A lógica segue a mesma.
+         */        
+        return <TaskPause isMobile={isMobile} onRestart={() => {}} onFinish={() => {}} onPause={() => {}} />;
+
+      case "completed":
+        return (
+          <>modal finished</>
+          // <TaskCompleted
+          //   isMobile={isMobile}
+          //   data={doneItems.find(e => e.id === cardSelected)}
+          // />
+        );
+
+      default:
+        return null;
     }
-    else if (isFinishModalOpen) {
-      return (
-        <>MODAL FINISH</>
-      );
-    }
-    else if (isPauseModalOpen) {
-      return (
-        <>MODAL PAUSE</>
-      );
-      
-    }
-  }
+  };
 
   return (
     <>
+      {contextHolder}
       <Row
         wrap={!isMobile}
         className={classes.kanbanBoard}
@@ -107,9 +141,9 @@ const SettingsList = () => {
           isMobile={isMobile}
           ref={todoList}
           list={todos}
-          onModalOpen={showModal}
+          onModalOpen={setIsModalOpen}
           columnIndex={0}
-          onDetailsTask={setIsDetailsModalOpen}
+          onDetailsTask={() => setModalType('details')}
           onSelectTask={setCardSelected}
           
           />
@@ -120,11 +154,11 @@ const SettingsList = () => {
           isMobile={isMobile}
           ref={doingList}
           list={doing}
-          onModalOpen={setIsModalOpen}
+          onModalOpen={showModal}
           columnIndex={1}
-          onFinishTask={setIsFinishModalOpen}
-          onPauseTask={setIsPauseModalOpen}
-          onDetailsTask={setIsDetailsModalOpen}
+          onFinishTask={() => setModalType('finish')}
+          onPauseTask={() => setModalType('pause')}
+          onDetailsTask={() => setModalType('details')}
           onSelectTask={setCardSelected}
           />
         </Col>
@@ -134,20 +168,20 @@ const SettingsList = () => {
           isMobile={isMobile}
           ref={doneList}
           list={dones}
-          onModalOpen={showModal}
+          onModalOpen={setIsModalOpen}
           columnIndex={2}
-          onDetailsTask={setIsDetailsModalOpen}
+          onDetailsTask={() => setModalType('completed')}
           onSelectTask={setCardSelected}
           />
         </Col>
       </Row>
       <CustomModal 
       content={handleModalType()}
-      isModalOpen={isModalOpen}
+      isModalOpen={!!modalType}
       handleOk={handleOk}
-      handleCancel={handleCancel}
+      handleCancel={() => setModalType(null)}
       isMobile={isMobile}
-      data={todoItems.find(e => e.id === cardSelected)} />
+      data={cardSelected} />
     </>
   );
 }

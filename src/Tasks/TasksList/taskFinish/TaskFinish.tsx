@@ -1,25 +1,20 @@
-import { Form, Checkbox, Input, DatePicker, Button, ColorPicker, Tooltip, Row, Col } from 'antd';
-import TextArea from 'antd/es/input/TextArea';
-import { TimePicker } from 'antd';
-import dayjs from 'dayjs';
-import { PlusOutlined, DeleteOutlined, CheckOutlined } from '@ant-design/icons';
-import { Collapse } from 'antd';
-import type { CollapseProps } from 'antd';
+import { CheckOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Form, type CollapseProps, Tooltip, Checkbox, Input, Row, Col, TimePicker, DatePicker, Button, Collapse, ColorPicker } from "antd";
+import TextArea from "antd/es/input/TextArea";
 import { Typography } from 'antd';
+import dayjs from 'dayjs';
+import { HappyProvider } from "@ant-design/happy-work-theme";
 const { Text } = Typography;
-import { useDebounce } from '../../../hooks/useDebounce';
-import { useEffect } from 'react';
 
-interface TaskDetailsProps {
+interface TaskFinishProps {
     isMobile: boolean;
     data: any;
-    onFormChange: (value: any) => void;
+    onFinishTask: () => void;
 }
 
-const TaskDetails = ({isMobile, data, onFormChange}: TaskDetailsProps) => {
+const TaskFinish = ({isMobile, data, onFinishTask}: TaskFinishProps) => {
     const [form] = Form.useForm();
     const values = Form.useWatch([], form);
-    const debouncedForm = useDebounce(values, 1000);
     const formatTime = 'HH:mm';
     const formatDate = 'DD/MM/YYYY';
     const collapseItems: CollapseProps['items'] =
@@ -39,23 +34,23 @@ const TaskDetails = ({isMobile, data, onFormChange}: TaskDetailsProps) => {
             <div>
                 <div>
                     <Form.Item label="Título" layout="vertical" name={'taskTitle'}>
-                        <Input />
+                        <Input disabled={true} />
                     </Form.Item>
                     <Form.Item label="Resumo" layout="vertical" name={'taskSummary'}>
-                        <Input />
+                        <Input disabled={true} />
                     </Form.Item>
                     <Form.Item label="Descrição" layout="vertical" name={'taskDescription'}>
-                        <TextArea  rows={10} placeholder="maxLength is 6" maxLength={6} />
+                        <TextArea disabled={true} rows={10} placeholder="maxLength is 6" maxLength={6} />
                     </Form.Item>
                     <Row>
                         <Col span={12}>
                             <Form.Item  label="Tempo estimado" layout="vertical" name={'taskEstimatedTime'}>
-                                <TimePicker style={{width: '95%'}} defaultValue={dayjs('00:00', formatTime)} format={formatTime} />
+                                <TimePicker disabled={true} style={{width: '95%'}} defaultValue={dayjs('00:00', formatTime)} format={formatTime} />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item label="Data limite" name={'taskDeadline'}>
-                                <DatePicker style={{width: '100%'}} format={formatDate} defaultValue={dayjs()} />
+                                <DatePicker disabled={true} style={{width: '100%'}} format={formatDate} defaultValue={dayjs()} />
                             </Form.Item>
                         </Col>
                     </Row>
@@ -72,12 +67,6 @@ const TaskDetails = ({isMobile, data, onFormChange}: TaskDetailsProps) => {
             )
     })) ?? [];
 
-    useEffect(() => {
-        if (!debouncedForm) return;
-        console.log('debounced', debouncedForm);
-        onFormChange(debouncedForm);
-    }, [debouncedForm]);
-
     return (
         <Form
         form={form}
@@ -87,21 +76,22 @@ const TaskDetails = ({isMobile, data, onFormChange}: TaskDetailsProps) => {
         disabled={false}
         style={isMobile ? { height: '100vh', overflowY: 'auto', maxWidth: 600 } : { maxWidth: 600 }}
         >
+            <h1>Deseja finalizar essa tarefa?</h1>
           <Form.Item label="Título" layout="vertical" name={'title'}>
-            <Input />
+            <Input disabled={true} />
           </Form.Item>
           <Form.Item label="Descrição" layout="vertical" name={'description'}>
-           <TextArea rows={4} placeholder="maxLength is 6" maxLength={6} />
+           <TextArea disabled={true} rows={4} placeholder="maxLength is 6" maxLength={6} />
           </Form.Item>
           <Row>
             <Col span={12}>
                 <Form.Item  label="Tempo estimado" layout="vertical" name={'estimatedTime'}>
-                    <TimePicker style={{width: '95%'}} defaultValue={dayjs('00:00', formatTime)} format={formatTime} />
+                    <TimePicker disabled={true} style={{width: '95%'}} defaultValue={dayjs('00:00', formatTime)} format={formatTime} />
                 </Form.Item>
             </Col>
             <Col span={12}>
                 <Form.Item label="Data limite" name={'deadline'}>
-                    <DatePicker defaultValue={dayjs()} format={formatDate} style={{width: '100%'}} />
+                    <DatePicker disabled={true} defaultValue={dayjs()} format={formatDate} style={{width: '100%'}} />
                 </Form.Item>
             </Col>
           </Row>
@@ -109,9 +99,6 @@ const TaskDetails = ({isMobile, data, onFormChange}: TaskDetailsProps) => {
             <div style={{marginBottom: '16px'}}>
                 <div style={{display: 'flex', justifyContent: 'space-between'}}>
                     Tarefas
-                    <Button onClick={() => { }} type="primary" icon={<PlusOutlined />} size={'medium'}>
-                        <span>Adicionar nova tarefa</span>
-                    </Button>
                 </div>
                 <div style={{marginTop: '16px'}}>
                     {collapseItems?.length === 0 ? (
@@ -126,12 +113,25 @@ const TaskDetails = ({isMobile, data, onFormChange}: TaskDetailsProps) => {
                 </div>
             </div>
 
-          <Form.Item label="Cor do Card" name={'cardColor'}>
-            <ColorPicker />
+          <Form.Item  label="Cor do Card" name={'cardColor'}>
+            <ColorPicker disabled={true}/>
           </Form.Item>
+
+          <div style={{display: 'flex', justifyContent: 'end'}}>
+            {!isMobile ? (
+                <Tooltip title={'Finalizar'}>
+                    <HappyProvider>
+                        <Button style={{marginRight: '8px'}} type="primary" icon={<CheckOutlined />} size={'medium'}/>
+                    </HappyProvider>
+                </Tooltip>
+            ) : (
+                <HappyProvider>
+                    <Button style={{marginRight: '8px'}} type="primary" size={'medium'} onClick={onFinishTask}>Finalizar</Button>
+                </HappyProvider>
+            )}
+                </div>
         </Form>
-    );
+    )
 }
 
-export default TaskDetails;
-
+export default TaskFinish;
