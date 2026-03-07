@@ -10,6 +10,8 @@ import TaskDetails from './taskDetails/TaskDetails';
 import TaskFinish from './taskFinish/TaskFinish';
 import TaskPause from './taskPause/TaskPause';
 import { PlusOutlined } from '@ant-design/icons';
+import { addDoc, collection, getFirestore } from 'firebase/firestore';
+import { app } from '../../firebase';
 
 const todoItems: any[] = [
   {
@@ -93,9 +95,10 @@ const SettingsList = () => {
            <TaskDetails 
             isMobile={isMobile} 
             data={null}
-            onFormChange={() => {
+            onFormChange={(value: any) => {
               //executa a chamada a api, dependendo do resultado exibe a notificação
               // mock
+              console.log(value)
               openNotification();
             }}
             onSave={() => setModalType(null)} 
@@ -143,6 +146,19 @@ const SettingsList = () => {
     }
   };
 
+  const db = getFirestore(app);
+
+  const addUser = async () => {
+    await addDoc(collection(db, 'users'), {
+      name: 'fulano',
+      age: 31
+    });
+  };
+
+  useEffect(() => {
+    //addUser();
+  }, [modalType])
+
   return (
     <>
       {contextHolder}
@@ -164,9 +180,8 @@ const SettingsList = () => {
       <Row
         wrap={!isMobile}
         className={classes.kanbanBoard}
-        style={{overflowX: isMobile ? 'auto' : 'visible'}}>
-        <Col flex={isMobile ? '280px' : undefined} xs={24} md={6}>
-        
+        style={{overflowX: isMobile ? 'auto' : 'visible', minHeight: '80vh'}}>
+        <Col flex={isMobile ? '280px' : undefined} span={24}>
           <ColumnsContent
           columnTitle='Pendente'
           isMobile={isMobile}
@@ -176,7 +191,6 @@ const SettingsList = () => {
           columnIndex={0}
           onDetailsTask={() => setModalType('details')}
           onSelectTask={setCardSelected}
-          
           />
         </Col>
         <Col flex={isMobile ? '280px' : undefined} xs={24} md={6}>
