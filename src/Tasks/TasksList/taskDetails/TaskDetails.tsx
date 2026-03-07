@@ -9,15 +9,18 @@ import { Typography } from 'antd';
 const { Text } = Typography;
 import { useDebounce } from '../../../hooks/useDebounce';
 import { useEffect } from 'react';
+import { HappyProvider } from '@ant-design/happy-work-theme';
+import * as classes from './TaskDetails.css'
 
 interface TaskDetailsProps {
     isMobile: boolean;
     data: any;
     onFormChange?: (value: any) => void;
+    onSave?: () => void;
     isFinished?: boolean;
 }
 
-const TaskDetails = ({isMobile, data, onFormChange, isFinished = false}: TaskDetailsProps) => {
+const TaskDetails = ({isMobile, data, onFormChange, isFinished = false, onSave}: TaskDetailsProps) => {
     const [form] = Form.useForm();
     const values = Form.useWatch([], form);
     const debouncedForm = useDebounce(values, 1000);
@@ -116,9 +119,11 @@ const TaskDetails = ({isMobile, data, onFormChange, isFinished = false}: TaskDet
             <div style={{marginBottom: '16px'}}>
                 <div style={{display: 'flex', justifyContent: 'space-between'}}>
                     Subtarefas
-                    <Button disabled={isFinished} onClick={() => { }} type="primary" icon={<PlusOutlined />} size={'medium'}>
-                        <span>Adicionar nova subtarefa</span>
-                    </Button>
+                    {!isFinished && (
+                        <Button onClick={() => { }} type="primary" icon={<PlusOutlined />} size={'medium'}>
+                            <span>Adicionar nova subtarefa</span>
+                        </Button>
+                    )}
                 </div>
                 <div style={{marginTop: '16px'}}>
                     {collapseItems?.length === 0 ? (
@@ -136,6 +141,36 @@ const TaskDetails = ({isMobile, data, onFormChange, isFinished = false}: TaskDet
           <Form.Item label="Cor do Card" name={'cardColor'}>
             <ColorPicker disabled={isFinished} />
           </Form.Item>
+
+          {!data && (
+            <div style={{display: 'flex', justifyContent: 'end', marginBottom: '16px'}}>
+            {!isMobile ? (
+                <Tooltip title={'Finalizar'}>
+                    <HappyProvider>
+                        <Button 
+                        className={classes.actionButton} 
+                        style={{marginRight: '8px'}} 
+                        type="primary" icon={<CheckOutlined />} 
+                        size={'medium'} 
+                        onClick={onSave}>
+                            <span className={classes.actionText}>Salvar</span>
+                        </Button>
+
+                    </HappyProvider>
+                </Tooltip>
+            ) : (
+                <HappyProvider>
+                    <Button 
+                    style={{marginRight: '8px'}} 
+                    type="primary" 
+                    size={'medium'} 
+                    onClick={onSave}>
+                        Salvar
+                    </Button>
+                </HappyProvider>
+            )}
+            </div>
+          )}
         </Form>
     );
 }

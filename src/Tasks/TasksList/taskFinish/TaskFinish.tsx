@@ -5,6 +5,7 @@ import { Typography } from 'antd';
 import dayjs from 'dayjs';
 import { HappyProvider } from "@ant-design/happy-work-theme";
 const { Text } = Typography;
+import * as classes from './TaskFinish.css'
 
 interface TaskFinishProps {
     isMobile: boolean;
@@ -53,14 +54,6 @@ const TaskFinish = ({isMobile, data, onFinishTask}: TaskFinishProps) => {
                             </Form.Item>
                         </Col>
                     </Row>
-                </div>
-                <div style={{display: 'flex', justifyContent: 'end'}}>
-                    <Tooltip title={'Salvar alterações'}>
-                        <Button style={{marginRight: '8px'}} type="primary" icon={<CheckOutlined />} size={'medium'} />
-                    </Tooltip>
-                    <Tooltip title="Excluir tarefa">
-                        <Button type="primary" danger icon={<DeleteOutlined />} size={'medium'} />
-                    </Tooltip>
                 </div>
             </div>
             )
@@ -116,16 +109,30 @@ const TaskFinish = ({isMobile, data, onFinishTask}: TaskFinishProps) => {
             <ColorPicker disabled={true}/>
           </Form.Item>
 
-          <div style={{display: 'flex', justifyContent: 'end'}}>
+          <div style={{display: 'flex', justifyContent: 'end', marginBottom: '16px'}}>
             {!isMobile ? (
                 <Tooltip title={'Finalizar'}>
                     <HappyProvider>
-                        <Button style={{marginRight: '8px'}} type="primary" icon={<CheckOutlined />} size={'medium'}/>
+                        <Button 
+                        className={classes.actionButton} 
+                        style={{marginRight: '8px'}} 
+                        type="primary" icon={<CheckOutlined />} 
+                        size={'medium'} 
+                        onClick={onFinishTask}>
+                            <span className={classes.actionText}>Finalizar</span>
+                        </Button>
+
                     </HappyProvider>
                 </Tooltip>
             ) : (
                 <HappyProvider>
-                    <Button style={{marginRight: '8px'}} type="primary" size={'medium'} onClick={onFinishTask}>Finalizar</Button>
+                    <Button 
+                    style={{marginRight: '8px'}} 
+                    type="primary" 
+                    size={'medium'} 
+                    onClick={onFinishTask}>
+                        Finalizar
+                    </Button>
                 </HappyProvider>
             )}
                 </div>

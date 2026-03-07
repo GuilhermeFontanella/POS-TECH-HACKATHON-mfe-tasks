@@ -1,7 +1,7 @@
 import * as classes from './TasksList.css';
 import { useEffect, useState } from 'react';
 import { useDragAndDrop } from '@formkit/drag-and-drop/react';
-import { Button, Col, Row, Tooltip, message  } from 'antd';
+import { Button, Col, Row, message  } from 'antd';
 import { useDevice } from '../../hooks/useDevice';
 import ColumnsContent from './columnsContent/ColumnsContent';
 import { useLockBodyScroll } from '../../hooks/useLockBodyScroll';
@@ -97,7 +97,8 @@ const SettingsList = () => {
               //executa a chamada a api, dependendo do resultado exibe a notificação
               // mock
               openNotification();
-            }} 
+            }}
+            onSave={() => setModalType(null)} 
             />
         );
       case "finish":
@@ -109,7 +110,6 @@ const SettingsList = () => {
               // chama a função para encerrar a task, atualizar a lista de tasks e fechar o modal.
 
               setModalType(null);
-
             }}
           />
         );
