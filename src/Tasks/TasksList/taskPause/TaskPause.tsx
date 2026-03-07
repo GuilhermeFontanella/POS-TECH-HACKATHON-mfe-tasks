@@ -1,16 +1,16 @@
-import { Button, Col, Descriptions, Row, Tooltip } from "antd";
+import { Button, Col, Descriptions, Row } from "antd";
 import Timer from "../../../components/timer/Timer";
 import { CheckOutlined, PauseOutlined, RedoOutlined } from "@ant-design/icons";
 import { HappyProvider } from "@ant-design/happy-work-theme";
 
 interface TaskPauseProps {
-    isMobile: boolean;
     onRestart: () => void;
     onFinish: () => void;
     onPause: () => void;
+    data: any;
 }
 
-const TaskPause = ({isMobile, onRestart, onFinish, onPause}: TaskPauseProps) => {
+const TaskPause = ({onRestart, onFinish, onPause, data}: TaskPauseProps) => {
     return (
         <div style={{paddingBottom: '24px'}}>
             <Row>

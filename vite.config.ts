@@ -5,7 +5,10 @@ import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin';
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: 'http://localhost:4173/',
+  server: {
+    port: 4174
+  },
+  base: 'http://localhost:4174/',
   plugins: [
     react(),
     vanillaExtractPlugin(),
@@ -13,7 +16,7 @@ export default defineConfig({
       name: 'mfe-tasks',
       filename: 'remoteEntry.js',
       exposes: {
-        './Settings': './src/bootstrap.tsx',
+        './Tasks': './src/bootstrap.tsx',
       },
       shared: ['react', 'react-dom'],
     })

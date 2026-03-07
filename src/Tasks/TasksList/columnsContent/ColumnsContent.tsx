@@ -8,7 +8,7 @@ interface ColumnsContentProps {
     onModalOpen: (value: boolean) => void;
     onFinishTask?: () => void;
     onPauseTask?: () => void;
-    onDetailsTask: () => void;
+    onDetailsTask?: () => void;
     columnIndex: number;
     ref: React.Ref<HTMLUListElement>;
     onSelectTask?: (value: number) => void;

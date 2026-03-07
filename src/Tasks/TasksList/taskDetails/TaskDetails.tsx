@@ -13,10 +13,11 @@ import { useEffect } from 'react';
 interface TaskDetailsProps {
     isMobile: boolean;
     data: any;
-    onFormChange: (value: any) => void;
+    onFormChange?: (value: any) => void;
+    isFinished?: boolean;
 }
 
-const TaskDetails = ({isMobile, data, onFormChange}: TaskDetailsProps) => {
+const TaskDetails = ({isMobile, data, onFormChange, isFinished = false}: TaskDetailsProps) => {
     const [form] = Form.useForm();
     const values = Form.useWatch([], form);
     const debouncedForm = useDebounce(values, 1000);
@@ -27,7 +28,7 @@ const TaskDetails = ({isMobile, data, onFormChange}: TaskDetailsProps) => {
             key: String(task.id),
             label: (
             <Tooltip title={task.completed ? 'Tarefa finalizada' : 'Tarefa pendente'}>
-                <Checkbox checked={task.completed}>
+                <Checkbox disabled={isFinished} checked={task.completed}>
                     {task.completed ? (
                         <Text delete>{task.title}</Text>
                     ) : <Text>{task.title}</Text> }
@@ -39,33 +40,33 @@ const TaskDetails = ({isMobile, data, onFormChange}: TaskDetailsProps) => {
             <div>
                 <div>
                     <Form.Item label="Título" layout="vertical" name={'taskTitle'}>
-                        <Input />
+                        <Input disabled={isFinished} />
                     </Form.Item>
                     <Form.Item label="Resumo" layout="vertical" name={'taskSummary'}>
-                        <Input />
+                        <Input disabled={isFinished} />
                     </Form.Item>
                     <Form.Item label="Descrição" layout="vertical" name={'taskDescription'}>
-                        <TextArea  rows={10} placeholder="maxLength is 6" maxLength={6} />
+                        <TextArea disabled={isFinished} rows={10} placeholder="maxLength is 6" maxLength={6} />
                     </Form.Item>
                     <Row>
                         <Col span={12}>
                             <Form.Item  label="Tempo estimado" layout="vertical" name={'taskEstimatedTime'}>
-                                <TimePicker style={{width: '95%'}} defaultValue={dayjs('00:00', formatTime)} format={formatTime} />
+                                <TimePicker disabled={isFinished} style={{width: '95%'}} defaultValue={dayjs('00:00', formatTime)} format={formatTime} />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item label="Data limite" name={'taskDeadline'}>
-                                <DatePicker style={{width: '100%'}} format={formatDate} defaultValue={dayjs()} />
+                                <DatePicker disabled={isFinished} style={{width: '100%'}} format={formatDate} defaultValue={dayjs()} />
                             </Form.Item>
                         </Col>
                     </Row>
                 </div>
                 <div style={{display: 'flex', justifyContent: 'end'}}>
                     <Tooltip title={'Salvar alterações'}>
-                        <Button style={{marginRight: '8px'}} type="primary" icon={<CheckOutlined />} size={'medium'} />
+                        <Button disabled={isFinished} style={{marginRight: '8px'}} type="primary" icon={<CheckOutlined />} size={'medium'} />
                     </Tooltip>
                     <Tooltip title="Excluir tarefa">
-                        <Button type="primary" danger icon={<DeleteOutlined />} size={'medium'} />
+                        <Button disabled={isFinished} type="primary" danger icon={<DeleteOutlined />} size={'medium'} />
                     </Tooltip>
                 </div>
             </div>
@@ -74,9 +75,14 @@ const TaskDetails = ({isMobile, data, onFormChange}: TaskDetailsProps) => {
 
     useEffect(() => {
         if (!debouncedForm) return;
-        console.log('debounced', debouncedForm);
-        onFormChange(debouncedForm);
+        onFormChange?.(debouncedForm);
     }, [debouncedForm]);
+
+    useEffect(() => {
+  
+        console.log(isFinished)
+       
+    }, [isFinished]);
 
     return (
         <Form
@@ -87,30 +93,31 @@ const TaskDetails = ({isMobile, data, onFormChange}: TaskDetailsProps) => {
         disabled={false}
         style={isMobile ? { height: '100vh', overflowY: 'auto', maxWidth: 600 } : { maxWidth: 600 }}
         >
+            {!data && (<h1>Nova tarefa</h1>)}
           <Form.Item label="Título" layout="vertical" name={'title'}>
-            <Input />
+            <Input disabled={isFinished} />
           </Form.Item>
           <Form.Item label="Descrição" layout="vertical" name={'description'}>
-           <TextArea rows={4} placeholder="maxLength is 6" maxLength={6} />
+           <TextArea disabled={isFinished} rows={4} placeholder="maxLength is 6" maxLength={6} />
           </Form.Item>
           <Row>
             <Col span={12}>
                 <Form.Item  label="Tempo estimado" layout="vertical" name={'estimatedTime'}>
-                    <TimePicker style={{width: '95%'}} defaultValue={dayjs('00:00', formatTime)} format={formatTime} />
+                    <TimePicker disabled={isFinished} style={{width: '95%'}} defaultValue={dayjs('00:00', formatTime)} format={formatTime} />
                 </Form.Item>
             </Col>
             <Col span={12}>
                 <Form.Item label="Data limite" name={'deadline'}>
-                    <DatePicker defaultValue={dayjs()} format={formatDate} style={{width: '100%'}} />
+                    <DatePicker disabled={isFinished} defaultValue={dayjs()} format={formatDate} style={{width: '100%'}} />
                 </Form.Item>
             </Col>
           </Row>
          
             <div style={{marginBottom: '16px'}}>
                 <div style={{display: 'flex', justifyContent: 'space-between'}}>
-                    Tarefas
-                    <Button onClick={() => { }} type="primary" icon={<PlusOutlined />} size={'medium'}>
-                        <span>Adicionar nova tarefa</span>
+                    Subtarefas
+                    <Button disabled={isFinished} onClick={() => { }} type="primary" icon={<PlusOutlined />} size={'medium'}>
+                        <span>Adicionar nova subtarefa</span>
                     </Button>
                 </div>
                 <div style={{marginTop: '16px'}}>
@@ -127,7 +134,7 @@ const TaskDetails = ({isMobile, data, onFormChange}: TaskDetailsProps) => {
             </div>
 
           <Form.Item label="Cor do Card" name={'cardColor'}>
-            <ColorPicker />
+            <ColorPicker disabled={isFinished} />
           </Form.Item>
         </Form>
     );

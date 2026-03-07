@@ -20,7 +20,7 @@ const CustomModal = ({
 }: CustomModalProps) => {
 
   useEffect(() => {
-    console.log('passou aqui')
+    console.log(data)
   }, [isModalOpen])
 
     return (
@@ -29,7 +29,7 @@ const CustomModal = ({
         centered={!isMobile}
         footer={null}
         style={isMobile ? { top: 0, padding: 0 } : undefined}
-        title={data?.title}
+        title={data?.title }
         closable={{ 'aria-label': 'Custom Close Button' }}
         open={isModalOpen}
         onOk={handleOk}

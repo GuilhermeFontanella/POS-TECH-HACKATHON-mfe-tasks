@@ -14,7 +14,6 @@ interface TaskFinishProps {
 
 const TaskFinish = ({isMobile, data, onFinishTask}: TaskFinishProps) => {
     const [form] = Form.useForm();
-    const values = Form.useWatch([], form);
     const formatTime = 'HH:mm';
     const formatDate = 'DD/MM/YYYY';
     const collapseItems: CollapseProps['items'] =
