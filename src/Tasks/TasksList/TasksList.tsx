@@ -49,7 +49,7 @@ const SettingsList = () => {
 
   const findRelatedTaskSelected = (taskId: any) => {
     const all = [...todos, ...doing, ...dones];
-    return all.find(e => e.id === taskId);
+    return all.find(e => e.id === taskId) ?? null;
   };
   
   const openNotification = (type: 'error' | 'success', message: string) => {
@@ -122,7 +122,6 @@ const SettingsList = () => {
             isMobile={isMobile}
             data={findRelatedTaskSelected(cardSelected)}
             onFinishTask={() => {
-              console.log(cardSelected)
               handleTaskStatusChange(findRelatedTaskSelected(cardSelected)?.id, 'done')
               setModalType(null);
             }}
@@ -148,7 +147,7 @@ const SettingsList = () => {
         return (
           <TaskDetails
             isMobile={isMobile}
-            data={findRelatedTaskSelected(cardSelected)}
+            data={findRelatedTaskSelected(cardSelected)!}
             isFinished={findRelatedTaskSelected(cardSelected)?.completed}
           />
         );

@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import { HappyProvider } from "@ant-design/happy-work-theme";
 const { Text } = Typography;
 import * as classes from './TaskFinish.css'
+import { useEffect } from "react";
 
 interface TaskFinishProps {
     isMobile: boolean;
@@ -58,6 +59,23 @@ const TaskFinish = ({isMobile, data, onFinishTask}: TaskFinishProps) => {
             </div>
             )
     })) ?? [];
+
+    useEffect(() => {
+        if (!data) return;
+
+        form.setFieldsValue({
+            title: data.title,
+            summary: data.summary,
+            description: data.description,
+            estimatedTime: data.estimatedTime 
+                ? dayjs(data.estimatedTime, formatTime)
+                : null,
+            deadline: data.deadline
+                ? dayjs(data.deadline, formatDate)
+                : null,
+            cardColor: data.cardColor
+        });
+    }, [data]);
 
     return (
         <Form

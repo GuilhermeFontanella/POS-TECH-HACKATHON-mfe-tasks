@@ -15,7 +15,7 @@ import type { Task } from '../../../types/task.interface';
 
 interface TaskDetailsProps {
     isMobile: boolean;
-    data: any;
+    data: Task | null;
     onFormChange?: (value: any) => void;
     onSave?: (value?: any) => void;
     isFinished?: boolean;
@@ -28,7 +28,7 @@ const TaskDetails = ({ isMobile, data, onFormChange, isFinished = false, onSave 
     const formatTime = 'HH:mm';
     const formatDate = 'DD/MM/YYYY';
     const collapseItems: CollapseProps['items'] =
-        data?.tasks?.map((task: any) => ({
+        data?.subTasks?.map((task: any) => ({
             key: String(task.id),
             label: (
                 <Tooltip title={task.completed ? 'Tarefa finalizada' : 'Tarefa pendente'}>
@@ -67,7 +67,11 @@ const TaskDetails = ({ isMobile, data, onFormChange, isFinished = false, onSave 
                                 label="Tempo estimado"
                                 layout="vertical" 
                                 name={'estimatedTime'}>
-                                    <TimePicker allowClear={true} disabled={isFinished} style={{ width: '95%' }} defaultValue={dayjs('00:00', formatTime)} format={formatTime} />
+                                    <TimePicker 
+                                    allowClear={true} 
+                                    disabled={isFinished} 
+                                    style={{ width: '95%' }} 
+                                    format={formatTime} />
                                 </Form.Item>
                             </Col>
                             <Col span={12}>
@@ -75,17 +79,30 @@ const TaskDetails = ({ isMobile, data, onFormChange, isFinished = false, onSave 
                                 rules={[{required: true, message: 'Campo obrigatório'}]} 
                                 label="Data limite" 
                                 name={'deadline'}>
-                                    <DatePicker disabledDate={(current) => current && current < dayjs().startOf('day')} disabled={isFinished} style={{ width: '100%' }} format={formatDate} defaultValue={dayjs()} />
+                                    <DatePicker 
+                                    disabledDate={(current) => current && current < dayjs().startOf('day')} 
+                                    disabled={isFinished} 
+                                    style={{ width: '100%' }} 
+                                    format={formatDate} />
                                 </Form.Item>
                             </Col>
                         </Row>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'end' }}>
                         <Tooltip title={'Salvar alterações'}>
-                            <Button disabled={isFinished} style={{ marginRight: '8px' }} type="primary" icon={<CheckOutlined />} size={'medium'} />
+                            <Button 
+                            disabled={isFinished} 
+                            style={{ marginRight: '8px' }} 
+                            type="primary" icon={<CheckOutlined />} 
+                            size={'medium'} />
                         </Tooltip>
                         <Tooltip title="Excluir tarefa">
-                            <Button disabled={isFinished} type="primary" danger icon={<DeleteOutlined />} size={'medium'} />
+                            <Button 
+                            disabled={isFinished} 
+                            type="primary" 
+                            danger 
+                            icon={<DeleteOutlined />} 
+                            size={'medium'} />
                         </Tooltip>
                     </div>
                 </div>
@@ -109,6 +126,23 @@ const TaskDetails = ({ isMobile, data, onFormChange, isFinished = false, onSave 
 
         onSave?.(payload);
     }
+
+    useEffect(() => {
+        if (!data) return;
+
+        form.setFieldsValue({
+            title: data.title,
+            summary: data.summary,
+            description: data.description,
+            estimatedTime: data.estimatedTime 
+                ? dayjs(data.estimatedTime, formatTime)
+                : null,
+            deadline: data.deadline
+                ? dayjs(data.deadline, formatDate)
+                : null,
+            cardColor: data.cardColor
+        });
+    }, [data]);
 
     return (
         <Form
@@ -144,7 +178,11 @@ const TaskDetails = ({ isMobile, data, onFormChange, isFinished = false, onSave 
                     label="Tempo estimado" 
                     layout="vertical" 
                     name={'estimatedTime'}>
-                        <TimePicker  allowClear={true} disabled={isFinished} style={{ width: '95%' }} defaultValue={dayjs('00:00', formatTime)} format={formatTime} />
+                        <TimePicker  
+                        allowClear={true} 
+                        disabled={isFinished} 
+                        style={{ width: '95%' }} 
+                        format={formatTime} />
                     </Form.Item>
                 </Col>
                 <Col span={12}>
