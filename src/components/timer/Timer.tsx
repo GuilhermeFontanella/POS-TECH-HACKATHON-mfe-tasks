@@ -3,49 +3,50 @@ import { useEffect, useState } from "react";
 
 interface TimerProps {
     timeRemaining: number;
+    totalTime: number;
 }
 
-const Timer = ({timeRemaining}: TimerProps) => {
+const Timer = ({timeRemaining, totalTime}: TimerProps) => {
     const [time, setTime] = useState(timeRemaining);
 
-    const getRemainingPercentage = (remaining: number, total: number) => {
-        if (total === 0) return 0;
-        return Math.max((remaining / total) * 100, 0);
-    };
+  useEffect(() => {
+    setTime(timeRemaining);
+  }, [timeRemaining]);
 
-    const formatCountdown = (ms: number) => {
-        const totalSeconds = Math.floor(ms / 1000);
+  const getRemainingPercentage = (remaining: number, total: number) => {
+    if (total === 0) return 0;
+    return Math.max((remaining / total) * 100, 0);
+  };
 
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
+  const formatCountdown = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
 
-        const pad = (n: number) => n.toString().padStart(2, "0");
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
 
-        if (hours > 0) return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-        if (minutes > 0) return `${pad(minutes)}:${pad(seconds)}`;
+    const pad = (n: number) => n.toString().padStart(2, "0");
 
-        return `${pad(seconds)}`;
-    };
+    if (hours > 0) return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    if (minutes > 0) return `${pad(minutes)}:${pad(seconds)}`;
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-        setTime(prev => Math.max(prev - 1000, 0));
-        }, 1000);
+    return `${pad(seconds)}`;
+  };
 
-        return () => clearInterval(interval);
-    }, []);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(prev => Math.max(prev - 1000, 0));
+    }, 1000);
 
-    const displayTime = formatCountdown(time);
-    const percent = getRemainingPercentage(time, timeRemaining);
+    return () => clearInterval(interval);
+  }, []);
 
-    useEffect(() => {
-        console.log(percent)
-    }, [percent])
+  const displayTime = formatCountdown(time);
+  const percent = getRemainingPercentage(time, totalTime);
 
-    return (
-        <Progress type="circle" percent={percent} format={() => displayTime} />
-    )
+  return (
+    <Progress type="circle" percent={percent} format={() => displayTime} />
+  );
 }
 
 export default Timer;

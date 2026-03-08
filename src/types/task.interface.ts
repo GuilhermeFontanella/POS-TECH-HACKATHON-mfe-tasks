@@ -1,3 +1,5 @@
+import type { Timestamp } from "firebase/firestore";
+
 export interface TaskCommons {
     id: any;
     title: string;
@@ -6,9 +8,10 @@ export interface TaskCommons {
     deadline: string;
     estimatedTime: string;
     completed: boolean;
-    startedAt: string;
-    finishedAt: string;
-    status: 'new' | 'doing' | 'done'
+    startedAt: Timestamp;
+    finishedAt: Timestamp;
+    status: 'new' | 'doing' | 'done',
+    createdAt: Timestamp;
 }
 
 export interface Task extends TaskCommons {

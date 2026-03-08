@@ -14,6 +14,7 @@ import type { Task } from '../../types/task.interface';
 import { useRegisterNewTask } from '../../hooks/useRegisterNewTask';
 import { useGetTaskList } from '../../hooks/useGetTaksList';
 import { useUpdateTask } from '../../hooks/useUpdateTask';
+import { serverTimestamp } from 'firebase/firestore';
 
 type ModalType = "new" | "details" | "finish" | "pause" | "completed" | null;
 
@@ -89,10 +90,21 @@ const SettingsList = () => {
   };
 
   const handleTaskStatusChange = async (taskId: string, newStatus: 'new' | 'doing' | 'done') => {
-    console.log(taskId)
-    await update(taskId, {
+    const payLoad: any = {
       status: newStatus
-    });
+    };
+
+    if (newStatus === 'doing') {
+      payLoad.startedAt = serverTimestamp();
+    }
+    if (newStatus === 'done') {
+      payLoad.finishedAt = serverTimestamp();
+    }
+    if (newStatus === 'new') {
+      payLoad.startedAt = null;
+    }
+    
+    await update(taskId, payLoad);
   };
 
 
