@@ -103,7 +103,9 @@ const TaskCard = ({ data, columnIndex, isMobile, onModalOpen, onFinishTask, onPa
     }
 
     function formatEstimatedTime(value: string): string {
-        const [hours, minutes] = value.split(":").map(Number);
+        const [hours, minutes] = value 
+            ? value?.split(":").map(Number) 
+            : ('00:00').split(':').map(Number);
 
         const parts: string[] = [];
 

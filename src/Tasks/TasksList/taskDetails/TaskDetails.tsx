@@ -8,7 +8,7 @@ import type { CollapseProps } from 'antd';
 import { Typography } from 'antd';
 const { Text } = Typography;
 import { useDebounce } from '../../../hooks/useDebounce';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { HappyProvider } from '@ant-design/happy-work-theme';
 import * as classes from './TaskDetails.css'
 import type { Task, TaskCommons } from '../../../types/task.interface';
@@ -118,7 +118,6 @@ const TaskDetails = ({ isMobile, taskId, onSave }: TaskDetailsProps) => {
             return;
         }
         taskById(taskId);
-        console.log(task)
     }, [taskId]);
 
     const handleTaskChange = async (taskId: string, data: Task) => {
@@ -150,11 +149,11 @@ const TaskDetails = ({ isMobile, taskId, onSave }: TaskDetailsProps) => {
 
     useEffect(() => {
         if (!debouncedForm) return;
-        if (debouncedForm && taskId && !!!task?.finishedAt) {
+        if (debouncedForm && taskId && !(!!task?.finishedAt)) {
             handleTaskChange(task?.id, { 
                 ...debouncedForm, 
                 deadline: debouncedForm?.deadline?.format(formatDate),
-                cardColor: debouncedForm?.cardColor?.toHexString?.() ?? ''
+                cardColor: debouncedForm?.cardColor?.toHexString?.() ?? task?.cardColor ?? null
             });
         }
     }, [debouncedForm]);
@@ -170,8 +169,8 @@ const TaskDetails = ({ isMobile, taskId, onSave }: TaskDetailsProps) => {
         }
 
         onSave?.(payload);
-    }
-
+    };
+ 
     useEffect(() => {
         if (!task) return;
 
@@ -185,7 +184,7 @@ const TaskDetails = ({ isMobile, taskId, onSave }: TaskDetailsProps) => {
             deadline: task.deadline
                 ? dayjs(task.deadline, formatDate)
                 : null,
-            cardColor: task.cardColor?.toHexString?.()
+            cardColor: task.cardColor ?? null
         });
     }, [task]);
 
