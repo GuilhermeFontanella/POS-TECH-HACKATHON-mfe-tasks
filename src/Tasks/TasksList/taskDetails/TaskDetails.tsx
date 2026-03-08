@@ -11,12 +11,13 @@ import { useDebounce } from '../../../hooks/useDebounce';
 import { useEffect } from 'react';
 import { HappyProvider } from '@ant-design/happy-work-theme';
 import * as classes from './TaskDetails.css'
+import type { Task } from '../../../types/task.interface';
 
 interface TaskDetailsProps {
     isMobile: boolean;
     data: any;
     onFormChange?: (value: any) => void;
-    onSave?: () => void;
+    onSave?: (value?: any) => void;
     isFinished?: boolean;
 }
 
@@ -42,24 +43,39 @@ const TaskDetails = ({ isMobile, data, onFormChange, isFinished = false, onSave 
             children: (
                 <div>
                     <div>
-                        <Form.Item label="Título" layout="vertical" name={'taskTitle'}>
+                        <Form.Item 
+                        rules={[{required: true, message: 'Campo obrigatório'}]} 
+                        label="Título" 
+                        layout="vertical" 
+                        name={'title'}>
                             <Input allowClear={true} disabled={isFinished} />
                         </Form.Item>
-                        <Form.Item label="Resumo" layout="vertical" name={'taskSummary'}>
+                        <Form.Item 
+                        rules={[{required: true, message: 'Campo obrigatório'}]} 
+                        label="Resumo" 
+                        layout="vertical" 
+                        name={'summary'}>
                             <Input disabled={isFinished} />
                         </Form.Item>
-                        <Form.Item label="Descrição" layout="vertical" name={'taskDescription'}>
+                        <Form.Item label="Descrição" layout="vertical" name={'description'}>
                             <TextArea disabled={isFinished} rows={10} placeholder="maxLength is 6" maxLength={6} />
                         </Form.Item>
                         <Row>
                             <Col span={12}>
-                                <Form.Item label="Tempo estimado" layout="vertical" name={'taskEstimatedTime'}>
+                                <Form.Item 
+                                rules={[{required: true, message: 'Campo obrigatório'}]} 
+                                label="Tempo estimado"
+                                layout="vertical" 
+                                name={'estimatedTime'}>
                                     <TimePicker allowClear={true} disabled={isFinished} style={{ width: '95%' }} defaultValue={dayjs('00:00', formatTime)} format={formatTime} />
                                 </Form.Item>
                             </Col>
                             <Col span={12}>
-                                <Form.Item label="Data limite" name={'taskDeadline'}>
-                                    <DatePicker disabled={isFinished} style={{ width: '100%' }} format={formatDate} defaultValue={dayjs()} />
+                                <Form.Item 
+                                rules={[{required: true, message: 'Campo obrigatório'}]} 
+                                label="Data limite" 
+                                name={'deadline'}>
+                                    <DatePicker disabledDate={(current) => current && current < dayjs().startOf('day')} disabled={isFinished} style={{ width: '100%' }} format={formatDate} defaultValue={dayjs()} />
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -81,6 +97,19 @@ const TaskDetails = ({ isMobile, data, onFormChange, isFinished = false, onSave 
         onFormChange?.(debouncedForm);
     }, [debouncedForm]);
 
+    const handleSave = () => {
+        const values = form.getFieldsValue();
+        const payload: Task = {
+            ...values,
+            cardColor: values.cardColor?.toHexString?.(),
+            estimatedTime: values.estimatedTime.format(formatTime),
+            deadline: values.deadline.format(formatDate),
+            status: 'new'
+        }
+
+        onSave?.(payload);
+    }
+
     return (
         <Form
             form={form}
@@ -91,10 +120,18 @@ const TaskDetails = ({ isMobile, data, onFormChange, isFinished = false, onSave 
             style={isMobile ? { height: '100vh', overflowY: 'auto', maxWidth: 600 } : { maxWidth: 600 }}
         >
             {!data && (<h1>Nova tarefa</h1>)}
-            <Form.Item label="Título" layout="vertical" name={'title'}>
-                <Input allowClear={true} disabled={isFinished} />
+            <Form.Item 
+            label="Título" 
+            layout="vertical" 
+            name={'title'}
+            rules={[{required: true, message: 'Campo obrigatório'}]}>
+                <Input required allowClear={true} disabled={isFinished} />
             </Form.Item>
-            <Form.Item label="Resumo" layout="vertical" name={'taskSummary'}>
+            <Form.Item 
+            rules={[{required: true, message: 'Campo obrigatório'}]} 
+            label="Resumo" 
+            layout="vertical" 
+            name={'summary'}>
                 <Input allowClear={true} disabled={isFinished} />
             </Form.Item>
             <Form.Item label="Descrição" layout="vertical" name={'description'}>
@@ -102,13 +139,24 @@ const TaskDetails = ({ isMobile, data, onFormChange, isFinished = false, onSave 
             </Form.Item>
             <Row>
                 <Col span={12}>
-                    <Form.Item label="Tempo estimado" layout="vertical" name={'estimatedTime'}>
-                        <TimePicker allowClear={true} disabled={isFinished} style={{ width: '95%' }} defaultValue={dayjs('00:00', formatTime)} format={formatTime} />
+                    <Form.Item 
+                    rules={[{required: true, message: 'Campo obrigatório'}]} 
+                    label="Tempo estimado" 
+                    layout="vertical" 
+                    name={'estimatedTime'}>
+                        <TimePicker  allowClear={true} disabled={isFinished} style={{ width: '95%' }} defaultValue={dayjs('00:00', formatTime)} format={formatTime} />
                     </Form.Item>
                 </Col>
                 <Col span={12}>
-                    <Form.Item label="Data limite" name={'deadline'}>
-                        <DatePicker allowClear={true} disabled={isFinished} defaultValue={dayjs()} format={formatDate} style={{ width: '100%' }} />
+                    <Form.Item 
+                    rules={[{required: true, message: 'Campo obrigatório'}]} 
+                    label="Data limite" 
+                    name={'deadline'}>
+                        <DatePicker 
+                        disabledDate={(current) => current && current < dayjs().startOf('day')} 
+                        disabled={isFinished} 
+                        style={{ width: '100%' }} 
+                        format={formatDate} />
                     </Form.Item>
                 </Col>
             </Row>
@@ -136,7 +184,7 @@ const TaskDetails = ({ isMobile, data, onFormChange, isFinished = false, onSave 
             </div>
 
             <Form.Item label="Cor do Card" name={'cardColor'}>
-                <ColorPicker allowClear={true} disabled={isFinished} />
+                <ColorPicker format='hex' allowClear={true} disabled={isFinished} />
             </Form.Item>
 
             {!data && (
@@ -149,7 +197,7 @@ const TaskDetails = ({ isMobile, data, onFormChange, isFinished = false, onSave 
                                     style={{ marginRight: '8px' }}
                                     type="primary" icon={<CheckOutlined />}
                                     size={'medium'}
-                                    onClick={onSave}>
+                                    onClick={() => onSave?.(debouncedForm)}>
                                     <span className={classes.actionText}>Salvar</span>
                                 </Button>
 
@@ -161,7 +209,7 @@ const TaskDetails = ({ isMobile, data, onFormChange, isFinished = false, onSave 
                                 style={{ marginRight: '8px' }}
                                 type="primary"
                                 size={'medium'}
-                                onClick={onSave}>
+                                onClick={() => handleSave()}>
                                 Salvar
                             </Button>
                         </HappyProvider>

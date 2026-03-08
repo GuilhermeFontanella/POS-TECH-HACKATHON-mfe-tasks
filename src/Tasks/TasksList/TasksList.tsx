@@ -1,5 +1,5 @@
 import * as classes from './TasksList.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDragAndDrop } from '@formkit/drag-and-drop/react';
 import { Button, Col, Row, message  } from 'antd';
 import { useDevice } from '../../hooks/useDevice';
@@ -10,57 +10,71 @@ import TaskDetails from './taskDetails/TaskDetails';
 import TaskFinish from './taskFinish/TaskFinish';
 import TaskPause from './taskPause/TaskPause';
 import { PlusOutlined } from '@ant-design/icons';
-import { addDoc, collection, getFirestore } from 'firebase/firestore';
-import { app } from '../../firebase';
+import type { Task } from '../../types/task.interface';
+import { useRegisterNewTask } from '../../hooks/useRegisterNewTask';
+import { useGetTaskList } from '../../hooks/useGetTaksList';
+import { useUpdateTask } from '../../hooks/useUpdateTask';
+import { useTask } from '../../hooks/useTask';
 
-const todoItems: any[] = [
-  {
-    id: 1,
-    title: 'Titulo',
-    summary: 'Resumo da tarefa',
-    description: 'Descrição mais longa',
-    estimatedTime: 10,
-    tasks: [
-      { 
-        id: 1,
-        title: 'titulo da tarefa',
-        summary: 'resumo da tarefa secundaria',
-        estimatedTime: 5, // em milissegundos
-        deadline: '10/03/2026 - 23:59:59',
-        completed: true
-      },
-    ],
-    deadline: '10/03/2026 - 23:59:59',
-    completed: true,
-    dateCompletation: null,
-    dateCreation: '09/03/2026 - 23:00:00',
-    status: 'doing' // 'new' || 'doing' || 'done' e então preencher as listas.
-  }
-];
+// const todoItems: any[] = [
+//   {
+//     id: 1,
+//     title: 'Titulo',
+//     summary: 'Resumo da tarefa',
+//     description: 'Descrição mais longa',
+//     estimatedTime: 10,
+//     tasks: [
+//       { 
+//         id: 1,
+//         title: 'titulo da tarefa',
+//         summary: 'resumo da tarefa secundaria',
+//         estimatedTime: 5, // em milissegundos
+//         deadline: '10/03/2026 - 23:59:59',
+//         completed: true
+//       },
+//     ],
+//     deadline: '10/03/2026 - 23:59:59',
+//     completed: true,
+//     dateCompletation: null,
+//     dateCreation: '09/03/2026 - 23:00:00',
+//     status: 'doing' // 'new' || 'doing' || 'done' e então preencher as listas.
+//   }
+// ];
 
 type ModalType = "new" | "details" | "finish" | "pause" | "completed" | null;
 
 const SettingsList = () => {
+  //const { task, taskById } = useTask();
+  const { data: tasks } = useGetTaskList();
+  const { update } = useUpdateTask();
+  const { mutateAsync } = useRegisterNewTask();
   const { isMobile } = useDevice();
   const [modalType, setModalType] = useState<ModalType>(null);
   const [cardSelected, setCardSelected] = useState<any | null>(null);
   const [api, contextHolder] = message.useMessage();
-  const doneItems: any[] = [];
-  const doingItems: any[] = [];
-  const [todoList, todos] = useDragAndDrop<HTMLUListElement, string>(todoItems, { group: "todoList" });
-  const [doneList, dones] = useDragAndDrop<HTMLUListElement, string>(doneItems, { group: "todoList" });
-  const [doingList, doing] = useDragAndDrop<HTMLUListElement, string>(doingItems, { group: "todoList" });
+  const [todoList, todos, setTodos] = useDragAndDrop<HTMLUListElement, Task>([], { 
+    group: "tasks",
+    onDragend(data) {
+        console.log(todos)
+    },
+  });
+  const [doingList, doing, setDoing] = useDragAndDrop<HTMLUListElement, Task>([], { 
+    group: "tasks",
+    onDragend(data) {
+        console.log(doing)
+    }
+  });
+  const [doneList, dones, setDones] = useDragAndDrop<HTMLUListElement, Task>([], { group: "tasks" });
 
-  const findRelatedTaskSelected = (taskId: number) => {
-    const tasks = [...todoItems, ...doingItems, ... doingItems];
-    const taksRelated = tasks.find(e => e.id === taskId);
-    return taksRelated;
-  }
+  const findRelatedTaskSelected = (taskId: any) => {
+    const all = [...todos, ...doing, ...dones];
+    return all.find(e => e.id === taskId);
+  };
   
-  const openNotification = () => {
+  const openNotification = (type: 'error' | 'success', message: string) => {
     api.open({
-      type: 'success',
-      content: 'Alterações salvas'
+      type: type,
+      content: message
     })
   }
 
@@ -70,11 +84,35 @@ const SettingsList = () => {
   });
 
   useEffect(() => {
-    if (cardSelected) {
-      console.log(cardSelected);
-      console.log(doneItems)
+    if (!tasks) return;
+
+    const todo = tasks.filter(t => t.status === "new");
+    const doing = tasks.filter(t => t.status === "doing");
+    const done = tasks.filter(t => t.status === "done");
+
+    setTodos(todo);
+    setDoing(doing);
+    setDones(done);
+
+  }, [tasks]);
+
+  const handleTaskChange = async (taskId: string, data: Task) => {
+    try {
+      await update(taskId, data);
+      openNotification('success', 'Alterações salvas');
+    } catch (error) {
+      openNotification('error', 'Ocorreu um erro ao salvar as informações.');
+      console.error(error);
+      throw error;
     }
-  }, [cardSelected])
+  };
+
+  const handleTaskStatusChange = async (taskId: string, newStatus: 'new' | 'doing' | 'done') => {
+    await update(taskId, {
+      status: newStatus
+    });
+  };
+
 
   const handleModalType = () => {
     switch (modalType) {
@@ -83,10 +121,8 @@ const SettingsList = () => {
            <TaskDetails 
             isMobile={isMobile} 
             data={findRelatedTaskSelected(cardSelected)}
-            onFormChange={() => {
-              //executa a chamada a api, dependendo do resultado exibe a notificação
-              // mock
-              openNotification();
+            onFormChange={(value) => {
+              handleTaskChange(cardSelected.id, value)
             }} 
             />
         );
@@ -95,13 +131,7 @@ const SettingsList = () => {
            <TaskDetails 
             isMobile={isMobile} 
             data={null}
-            onFormChange={(value: any) => {
-              //executa a chamada a api, dependendo do resultado exibe a notificação
-              // mock
-              console.log(value)
-              openNotification();
-            }}
-            onSave={() => setModalType(null)} 
+            onSave={(value) => handleSaveTask(value)} 
             />
         );
       case "finish":
@@ -110,8 +140,7 @@ const SettingsList = () => {
             isMobile={isMobile}
             data={findRelatedTaskSelected(cardSelected)}
             onFinishTask={() => {
-              // chama a função para encerrar a task, atualizar a lista de tasks e fechar o modal.
-
+              handleTaskStatusChange(cardSelected?.id, 'done')
               setModalType(null);
             }}
           />
@@ -146,18 +175,40 @@ const SettingsList = () => {
     }
   };
 
-  const db = getFirestore(app);
-
-  const addUser = async () => {
-    await addDoc(collection(db, 'users'), {
-      name: 'fulano',
-      age: 31
-    });
-  };
+  const handleSaveTask = async (value: Task) => {
+    try{
+      await mutateAsync(value);
+      openNotification('success', 'Tarefa cadastrada com sucesso');
+      setModalType(null);
+    } catch (error: any) {
+      openNotification('error', 'Ocorreu um erro ao cadastrar a tarefa.');
+      console.error(error);
+      throw error;
+    }
+  }
 
   useEffect(() => {
-    //addUser();
-  }, [modalType])
+    console.log(cardSelected);
+  }, [cardSelected])
+
+  // useEffect(() => {
+  //   if (!tasks) return;
+
+  //   const todo: Task[] = [];
+  //   const doing: Task[] = [];
+  //   const done: Task[] = [];
+
+  //   tasks.forEach((task) => {
+  //     if (task.status === "new") todo.push(task);
+  //     else if (task.status === "doing") doing.push(task);
+  //     else if (task.status === "done") done.push(task);
+  //   });
+
+  //   setTodoItems(todo);
+  //   setDoingItems(doing);
+  //   setDoneItems(done);
+
+  // }, [tasks]);
 
   return (
     <>
@@ -181,7 +232,7 @@ const SettingsList = () => {
         wrap={!isMobile}
         className={classes.kanbanBoard}
         style={{overflowX: isMobile ? 'auto' : 'visible', minHeight: '80vh'}}>
-        <Col flex={isMobile ? '280px' : undefined} span={24}>
+        <Col flex={isMobile ? '280px' : undefined} span={8}>
           <ColumnsContent
           columnTitle='Pendente'
           isMobile={isMobile}
@@ -193,7 +244,7 @@ const SettingsList = () => {
           onSelectTask={setCardSelected}
           />
         </Col>
-        <Col flex={isMobile ? '280px' : undefined} xs={24} md={6}>
+        <Col flex={isMobile ? '280px' : undefined} span={8}>
           <ColumnsContent
           columnTitle='Em progresso'
           isMobile={isMobile}
@@ -207,7 +258,7 @@ const SettingsList = () => {
           onSelectTask={setCardSelected}
           />
         </Col>
-        <Col flex={isMobile ? '280px' : undefined} xs={24} md={6}>
+        <Col flex={isMobile ? '280px' : undefined} span={8}>
           <ColumnsContent
           columnTitle='Feito'
           isMobile={isMobile}

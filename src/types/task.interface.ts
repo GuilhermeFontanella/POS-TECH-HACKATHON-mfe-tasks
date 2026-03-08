@@ -1,5 +1,5 @@
 export interface TaskCommons {
-    id: number;
+    id: any;
     title: string;
     description: string;
     summary: string;
@@ -8,6 +8,7 @@ export interface TaskCommons {
     completed: boolean;
     startedAt: string;
     finishedAt: string;
+    status: 'new' | 'doing' | 'done'
 }
 
 export interface Task extends TaskCommons {
