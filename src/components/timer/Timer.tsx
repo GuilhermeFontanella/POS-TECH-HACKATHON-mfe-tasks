@@ -4,14 +4,24 @@ import { useEffect, useState } from "react";
 interface TimerProps {
     timeRemaining: number;
     totalTime: number;
+    paused?: boolean; 
 }
 
-const Timer = ({timeRemaining, totalTime}: TimerProps) => {
+const Timer = ({timeRemaining, totalTime, paused}: TimerProps) => {
     const [time, setTime] = useState(timeRemaining);
 
   useEffect(() => {
     setTime(timeRemaining);
   }, [timeRemaining]);
+
+  useEffect(() => {
+    if (paused) return;
+    const interval = setInterval(() => {
+        setTime((prev) => Math.max(prev - 1000, 0))
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [paused, timeRemaining])
 
   const getRemainingPercentage = (remaining: number, total: number) => {
     if (total === 0) return 0;
@@ -32,14 +42,6 @@ const Timer = ({timeRemaining, totalTime}: TimerProps) => {
 
     return `${pad(seconds)}`;
   };
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTime(prev => Math.max(prev - 1000, 0));
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   const displayTime = formatCountdown(time);
   const percent = getRemainingPercentage(time, totalTime);

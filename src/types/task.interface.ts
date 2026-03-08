@@ -12,6 +12,7 @@ export interface TaskCommons {
     finishedAt: Timestamp;
     status: 'new' | 'doing' | 'done',
     createdAt: Timestamp;
+    pausedAt?: Timestamp;
 }
 
 export interface Task extends TaskCommons {

@@ -1,36 +1,23 @@
 import { Button, Col, Descriptions, Row } from "antd";
 import Timer from "../../../components/timer/Timer";
-import { CheckOutlined, PauseOutlined, RedoOutlined } from "@ant-design/icons";
+import { CaretRightOutlined, CheckOutlined, PauseOutlined, RedoOutlined } from "@ant-design/icons";
 import { HappyProvider } from "@ant-design/happy-work-theme";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useTask } from "../../../hooks/useTask";
 import dayjs from 'dayjs';
+import { useUpdateTask } from "../../../hooks/useUpdateTask";
+import { serverTimestamp } from "firebase/firestore";
 
 interface TaskPauseProps {
     onRestart: () => void;
     onFinish: () => void;
-    onPause: () => void;
+    onPause: (taskId: any) => void;
     data: any;
 }
 
 const TaskPause = ({onRestart, onFinish, onPause, data}: TaskPauseProps) => {
     const { task, loading, taskById } = useTask();
-
-    const ms = useMemo(() => {
-        if (!task?.estimatedTime) return 0;
-
-        const [hours, minutes] = task.estimatedTime.split(":").map(Number);
-        const estimatedMs = hours * 3600000 + minutes * 60000;
-
-        if (!task.startedAt) return estimatedMs;
-
-        const startedAtMs = task.startedAt.toDate().getTime();
-        const now = Date.now();
-
-        const elapsed = now - startedAtMs;
-
-        return Math.max(estimatedMs - elapsed, 0);
-    }, [task?.estimatedTime, task?.startedAt]);
+    const { update } = useUpdateTask();
 
     const estimatedMs = useMemo(() => {
         if (!task?.estimatedTime) return 0;
@@ -43,15 +30,38 @@ const TaskPause = ({onRestart, onFinish, onPause, data}: TaskPauseProps) => {
         if (!task?.startedAt) return estimatedMs;
 
         const startedAt = task.startedAt.toDate().getTime();
-        const elapsed = Date.now() - startedAt;
+
+        const endReference = task.pausedAt
+            ? task.pausedAt.toDate().getTime()
+            : Date.now();
+
+        const elapsed = endReference - startedAt;
 
         return Math.max(estimatedMs - elapsed, 0);
-    }, [task?.startedAt, estimatedMs]);
+    }, [task?.startedAt, task?.pausedAt, estimatedMs]);
 
     useEffect(() => {
         if (!data) return;
         taskById(data);
     }, [data]);
+
+    const handleTaskPause = async (taskId: string) => {
+        const payload: any = {};
+        !task?.pausedAt
+            ? payload.pausedAt = serverTimestamp()
+            : payload.pausedAt = null;
+
+        await update(taskId, payload);
+        await taskById(taskId);
+    };
+
+    const handleRestartTask = async (taskId: string) => {
+        const payload: any = {
+        startedAt: serverTimestamp()
+        }
+        await update(taskId, payload);
+        await taskById(taskId);
+    }
 
     return (
         <div style={{paddingBottom: '24px'}}>
@@ -64,7 +74,10 @@ const TaskPause = ({onRestart, onFinish, onPause, data}: TaskPauseProps) => {
                 <Col span={12}>
                     <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
                         <span style={{paddingBottom: '16px', fontWeight: '600', fontSize: '16px'}}>Tempo restante</span>
-                        <Timer timeRemaining={remainingMs} totalTime={estimatedMs} />
+                        <Timer 
+                        paused={!!task?.pausedAt} 
+                        timeRemaining={remainingMs} 
+                        totalTime={estimatedMs} />
                     </div>
                 </Col>
                 <Col span={12}>
@@ -95,11 +108,35 @@ const TaskPause = ({onRestart, onFinish, onPause, data}: TaskPauseProps) => {
             <Row>
                 <Col span={24}>
                     <div style={{display: 'flex', justifyContent: 'center'}}>
-                        <Button type={'default'} style={{marginRight: '8px'}} icon={<RedoOutlined />} size={'medium'} children={'Reiniciar'} onClick={onRestart} />
+                        <Button 
+                        type={'default'} 
+                        style={{marginRight: '8px'}} 
+                        icon={<RedoOutlined />} 
+                        size={'medium'} 
+                        children={'Reiniciar'} 
+                        onClick={() => {
+                            onRestart();
+                            handleRestartTask(task?.id);
+                        }} />
                         <HappyProvider>
-                            <Button style={{marginRight: '8px'}} type="primary" icon={<CheckOutlined />} size={'medium'} children={'Finalizar'} onClick={onFinish} />
+                            <Button 
+                            style={{marginRight: '8px'}} 
+                            type="primary" 
+                            icon={<CheckOutlined />} 
+                            size={'medium'} 
+                            children={'Finalizar'} 
+                            onClick={onFinish} />
                         </HappyProvider>
-                        <Button type="primary" danger icon={<PauseOutlined />} size={'medium'} children={'Pausar'} onClick={onPause} />
+                        <Button 
+                        type="primary" 
+                        danger={!task?.pausedAt ? true : false } 
+                        icon={task?.pausedAt ? <CaretRightOutlined /> : <PauseOutlined /> } 
+                        size={'medium'} 
+                        children={task?.pausedAt ? 'Continuar' : 'Pausar'} 
+                        onClick={() => {
+                            onPause(task?.id);
+                            handleTaskPause(task?.id)
+                        }} />
                     </div>
                 </Col>
             </Row>

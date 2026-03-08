@@ -88,7 +88,7 @@ const SettingsList = () => {
       throw error;
     }
   };
-
+  
   const handleTaskStatusChange = async (taskId: string, newStatus: 'new' | 'doing' | 'done') => {
     const payLoad: any = {
       status: newStatus
@@ -106,7 +106,6 @@ const SettingsList = () => {
     
     await update(taskId, payLoad);
   };
-
 
   const handleModalType = () => {
     switch (modalType) {
@@ -154,7 +153,14 @@ const SettingsList = () => {
          * obs* Quando o timer chegar a zero, devo disparar uma notificação pro usuario avisando do termino da tarefa dando a opção de finalizar a 
          * tarefa ou reinicar o contador. A lógica segue a mesma.
          */        
-        return <TaskPause data={cardSelected} onRestart={() => {}} onFinish={() => {}} onPause={() => {}} />;
+        return <TaskPause 
+        data={cardSelected} 
+        onRestart={() => {}} 
+        onFinish={() => {
+          handleTaskStatusChange(findRelatedTaskSelected(cardSelected)?.id, 'done')
+          setModalType(null);
+        }}
+        onPause={() => {}} />;
       case "completed":
         return (
           <TaskDetails
