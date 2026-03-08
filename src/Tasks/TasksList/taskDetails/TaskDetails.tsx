@@ -1,4 +1,4 @@
-import { Form, Checkbox, Input, DatePicker, Button, ColorPicker, Tooltip, Row, Col } from 'antd';
+import { Form, Checkbox, Input, DatePicker, Button, ColorPicker, Tooltip, Row, Col, message } from 'antd';
 import TextArea from 'antd/es/input/TextArea';
 import { TimePicker } from 'antd';
 import dayjs from 'dayjs';
@@ -11,28 +11,31 @@ import { useDebounce } from '../../../hooks/useDebounce';
 import { useEffect } from 'react';
 import { HappyProvider } from '@ant-design/happy-work-theme';
 import * as classes from './TaskDetails.css'
-import type { Task } from '../../../types/task.interface';
+import type { Task, TaskCommons } from '../../../types/task.interface';
+import { useTask } from '../../../hooks/useTask';
+import { useUpdateTask } from '../../../hooks/useUpdateTask';
 
 interface TaskDetailsProps {
     isMobile: boolean;
-    data: Task | null;
-    onFormChange?: (value: any) => void;
+    taskId: any;
     onSave?: (value?: any) => void;
-    isFinished?: boolean;
 }
 
-const TaskDetails = ({ isMobile, data, onFormChange, isFinished = false, onSave }: TaskDetailsProps) => {
+const TaskDetails = ({ isMobile, taskId, onSave }: TaskDetailsProps) => {
     const [form] = Form.useForm();
+    const { update } = useUpdateTask();
+    const [api, contextHolder] = message.useMessage();
+    const { task, loading, taskById } = useTask();
     const values = Form.useWatch([], form);
     const debouncedForm = useDebounce(values, 1000);
     const formatTime = 'HH:mm';
     const formatDate = 'DD/MM/YYYY';
     const collapseItems: CollapseProps['items'] =
-        data?.subTasks?.map((task: any) => ({
+        task?.subTasks?.map((subtask: TaskCommons) => ({
             key: String(task.id),
             label: (
                 <Tooltip title={task.completed ? 'Tarefa finalizada' : 'Tarefa pendente'}>
-                    <Checkbox disabled={isFinished} checked={task.completed}>
+                    <Checkbox disabled={subtask.completed} checked={task.completed}>
                         {task.completed ? (
                             <Text delete>{task.title}</Text>
                         ) : <Text>{task.title}</Text>}
@@ -48,17 +51,17 @@ const TaskDetails = ({ isMobile, data, onFormChange, isFinished = false, onSave 
                         label="Título" 
                         layout="vertical" 
                         name={'title'}>
-                            <Input allowClear={true} disabled={isFinished} />
+                            <Input allowClear={true} disabled={!!subtask.finishedAt} />
                         </Form.Item>
                         <Form.Item 
                         rules={[{required: true, message: 'Campo obrigatório'}]} 
                         label="Resumo" 
                         layout="vertical" 
                         name={'summary'}>
-                            <Input disabled={isFinished} />
+                            <Input disabled={!!subtask.finishedAt} />
                         </Form.Item>
                         <Form.Item label="Descrição" layout="vertical" name={'description'}>
-                            <TextArea disabled={isFinished} rows={10} placeholder="maxLength is 6" maxLength={6} />
+                            <TextArea disabled={!!subtask.finishedAt} rows={10} placeholder="maxLength is 6" maxLength={6} />
                         </Form.Item>
                         <Row>
                             <Col span={12}>
@@ -69,7 +72,7 @@ const TaskDetails = ({ isMobile, data, onFormChange, isFinished = false, onSave 
                                 name={'estimatedTime'}>
                                     <TimePicker 
                                     allowClear={true} 
-                                    disabled={isFinished} 
+                                    disabled={!!subtask.finishedAt} 
                                     style={{ width: '95%' }} 
                                     format={formatTime} />
                                 </Form.Item>
@@ -81,7 +84,7 @@ const TaskDetails = ({ isMobile, data, onFormChange, isFinished = false, onSave 
                                 name={'deadline'}>
                                     <DatePicker 
                                     disabledDate={(current) => current && current < dayjs().startOf('day')} 
-                                    disabled={isFinished} 
+                                    disabled={!!subtask.finishedAt} 
                                     style={{ width: '100%' }} 
                                     format={formatDate} />
                                 </Form.Item>
@@ -91,14 +94,14 @@ const TaskDetails = ({ isMobile, data, onFormChange, isFinished = false, onSave 
                     <div style={{ display: 'flex', justifyContent: 'end' }}>
                         <Tooltip title={'Salvar alterações'}>
                             <Button 
-                            disabled={isFinished} 
+                            disabled={!!subtask.finishedAt} 
                             style={{ marginRight: '8px' }} 
                             type="primary" icon={<CheckOutlined />} 
                             size={'medium'} />
                         </Tooltip>
                         <Tooltip title="Excluir tarefa">
                             <Button 
-                            disabled={isFinished} 
+                            disabled={!!subtask.finishedAt} 
                             type="primary" 
                             danger 
                             icon={<DeleteOutlined />} 
@@ -110,8 +113,50 @@ const TaskDetails = ({ isMobile, data, onFormChange, isFinished = false, onSave 
         })) ?? [];
 
     useEffect(() => {
+        if (!taskId)  {
+            form.resetFields(); 
+            return;
+        }
+        taskById(taskId);
+        console.log(task)
+    }, [taskId]);
+
+    const handleTaskChange = async (taskId: string, data: Task) => {
+        const payload: any = {
+          ...data,
+          estimatedTime: data.estimatedTime
+            ? dayjs(data.estimatedTime).format('HH:mm')
+            : null,
+          deadline: data.deadline
+            ? dayjs(data.deadline).format('DD/MM/YYYY')
+            : null,
+        }
+        try {
+          await update(taskId, payload);
+          openNotification('success', 'Alterações salvas');
+        } catch (error) {
+          openNotification('error', 'Ocorreu um erro ao salvar as informações.');
+          console.error(error);
+          throw error;
+        }
+      };
+
+        const openNotification = (type: 'error' | 'success', message: string) => {
+            api.open({
+                type: type,
+                content: message
+            })
+        }
+
+    useEffect(() => {
         if (!debouncedForm) return;
-        onFormChange?.(debouncedForm);
+        if (debouncedForm && taskId && !!!task?.finishedAt) {
+            handleTaskChange(task?.id, { 
+                ...debouncedForm, 
+                deadline: debouncedForm?.deadline?.format(formatDate),
+                cardColor: debouncedForm?.cardColor?.toHexString?.() ?? ''
+            });
+        }
     }, [debouncedForm]);
 
     const handleSave = () => {
@@ -128,133 +173,136 @@ const TaskDetails = ({ isMobile, data, onFormChange, isFinished = false, onSave 
     }
 
     useEffect(() => {
-        if (!data) return;
+        if (!task) return;
 
         form.setFieldsValue({
-            title: data.title,
-            summary: data.summary,
-            description: data.description,
-            estimatedTime: data.estimatedTime 
-                ? dayjs(data.estimatedTime, formatTime)
+            title: task.title,
+            summary: task.summary,
+            description: task.description,
+            estimatedTime: task.estimatedTime 
+                ? dayjs(task.estimatedTime, formatTime)
                 : null,
-            deadline: data.deadline
-                ? dayjs(data.deadline, formatDate)
+            deadline: task.deadline
+                ? dayjs(task.deadline, formatDate)
                 : null,
-            cardColor: data.cardColor
+            cardColor: task.cardColor?.toHexString?.()
         });
-    }, [data]);
+    }, [task]);
 
     return (
-        <Form
-            form={form}
-            labelCol={{ span: 12 }}
-            wrapperCol={{ span: 24 }}
-            layout="vertical"
-            disabled={false}
-            style={isMobile ? { height: '100vh', overflowY: 'auto', maxWidth: 600 } : { maxWidth: 600 }}
-        >
-            {!data && (<h1>Nova tarefa</h1>)}
-            <Form.Item 
-            label="Título" 
-            layout="vertical" 
-            name={'title'}
-            rules={[{required: true, message: 'Campo obrigatório'}]}>
-                <Input required allowClear={true} disabled={isFinished} />
-            </Form.Item>
-            <Form.Item 
-            rules={[{required: true, message: 'Campo obrigatório'}]} 
-            label="Resumo" 
-            layout="vertical" 
-            name={'summary'}>
-                <Input allowClear={true} disabled={isFinished} />
-            </Form.Item>
-            <Form.Item label="Descrição" layout="vertical" name={'description'}>
-                <TextArea allowClear={true} disabled={isFinished} rows={4} maxLength={3000} />
-            </Form.Item>
-            <Row>
-                <Col span={12}>
-                    <Form.Item 
-                    rules={[{required: true, message: 'Campo obrigatório'}]} 
-                    label="Tempo estimado" 
-                    layout="vertical" 
-                    name={'estimatedTime'}>
-                        <TimePicker  
-                        allowClear={true} 
-                        disabled={isFinished} 
-                        style={{ width: '95%' }} 
-                        format={formatTime} />
-                    </Form.Item>
-                </Col>
-                <Col span={12}>
-                    <Form.Item 
-                    rules={[{required: true, message: 'Campo obrigatório'}]} 
-                    label="Data limite" 
-                    name={'deadline'}>
-                        <DatePicker 
-                        disabledDate={(current) => current && current < dayjs().startOf('day')} 
-                        disabled={isFinished} 
-                        style={{ width: '100%' }} 
-                        format={formatDate} />
-                    </Form.Item>
-                </Col>
-            </Row>
+        <>
+            {contextHolder}
+            <Form
+                form={form}
+                labelCol={{ span: 12 }}
+                wrapperCol={{ span: 24 }}
+                layout="vertical"
+                disabled={false}
+                style={isMobile ? { height: '100vh', overflowY: 'auto', maxWidth: 600 } : { maxWidth: 600 }}
+            >
+                {!task && (<h1>Nova tarefa</h1>)}
+                <Form.Item 
+                label="Título" 
+                layout="vertical" 
+                name={'title'}
+                rules={[{required: true, message: 'Campo obrigatório'}]}>
+                    <Input required allowClear={true} disabled={!!task?.finishedAt} />
+                </Form.Item>
+                <Form.Item 
+                rules={[{required: true, message: 'Campo obrigatório'}]} 
+                label="Resumo" 
+                layout="vertical" 
+                name={'summary'}>
+                    <Input allowClear={true} disabled={!!task?.finishedAt} />
+                </Form.Item>
+                <Form.Item label="Descrição" layout="vertical" name={'description'}>
+                    <TextArea allowClear={true} disabled={!!task?.finishedAt} rows={4} maxLength={3000} />
+                </Form.Item>
+                <Row>
+                    <Col span={12}>
+                        <Form.Item 
+                        rules={[{required: true, message: 'Campo obrigatório'}]} 
+                        label="Tempo estimado" 
+                        layout="vertical" 
+                        name={'estimatedTime'}>
+                            <TimePicker  
+                            allowClear={true} 
+                            disabled={!!task?.finishedAt} 
+                            style={{ width: '95%' }} 
+                            format={formatTime} />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item 
+                        rules={[{required: true, message: 'Campo obrigatório'}]} 
+                        label="Data limite" 
+                        name={'deadline'}>
+                            <DatePicker 
+                            disabledDate={(current) => current && current < dayjs().startOf('day')} 
+                            disabled={!!task?.finishedAt} 
+                            style={{ width: '100%' }} 
+                            format={formatDate} />
+                        </Form.Item>
+                    </Col>
+                </Row>
 
-            <div style={{ marginBottom: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    Subtarefas
-                    {!isFinished && (
-                        <Button onClick={() => { }} type="primary" icon={<PlusOutlined />} size={'medium'}>
-                            <span>Adicionar nova subtarefa</span>
-                        </Button>
-                    )}
+                <div style={{ marginBottom: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        Subtarefas
+                        {!!!task?.finishedAt && (
+                            <Button onClick={() => { }} type="primary" icon={<PlusOutlined />} size={'medium'}>
+                                <span>Adicionar nova subtarefa</span>
+                            </Button>
+                        )}
+                    </div>
+                    <div style={{ marginTop: '16px' }}>
+                        {collapseItems?.length === 0 ? (
+                            <span style={{ color: 'darkGrey' }}>Sem tarefas cadastradas</span>
+                        ) : (
+                            <div>
+                                {collapseItems?.map(() => (
+                                    <Collapse items={collapseItems} defaultActiveKey={['1']} onChange={() => { }} />
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
-                <div style={{ marginTop: '16px' }}>
-                    {collapseItems?.length === 0 ? (
-                        <span style={{ color: 'darkGrey' }}>Sem tarefas cadastradas</span>
-                    ) : (
-                        <div>
-                            {collapseItems?.map(() => (
-                                <Collapse items={collapseItems} defaultActiveKey={['1']} onChange={() => { }} />
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
 
-            <Form.Item label="Cor do Card" name={'cardColor'}>
-                <ColorPicker format='hex' allowClear={true} disabled={isFinished} />
-            </Form.Item>
+                <Form.Item label="Cor do Card" name={'cardColor'}>
+                    <ColorPicker format='hex' allowClear={true} disabled={!!task?.finishedAt} />
+                </Form.Item>
 
-            {!data && (
-                <div style={{ display: 'flex', justifyContent: 'end', marginBottom: '16px' }}>
-                    {!isMobile ? (
-                        <Tooltip title={'Finalizar'}>
+                {!task && (
+                    <div style={{ display: 'flex', justifyContent: 'end', marginBottom: '16px' }}>
+                        {!isMobile ? (
+                            <Tooltip title={'Finalizar'}>
+                                <HappyProvider>
+                                    <Button
+                                        className={classes.actionButton}
+                                        style={{ marginRight: '8px' }}
+                                        type="primary" icon={<CheckOutlined />}
+                                        size={'medium'}
+                                        onClick={() => onSave?.(debouncedForm)}>
+                                        <span className={classes.actionText}>Salvar</span>
+                                    </Button>
+
+                                </HappyProvider>
+                            </Tooltip>
+                        ) : (
                             <HappyProvider>
                                 <Button
-                                    className={classes.actionButton}
                                     style={{ marginRight: '8px' }}
-                                    type="primary" icon={<CheckOutlined />}
+                                    type="primary"
                                     size={'medium'}
-                                    onClick={() => onSave?.(debouncedForm)}>
-                                    <span className={classes.actionText}>Salvar</span>
+                                    onClick={() => handleSave()}>
+                                    Salvar
                                 </Button>
-
                             </HappyProvider>
-                        </Tooltip>
-                    ) : (
-                        <HappyProvider>
-                            <Button
-                                style={{ marginRight: '8px' }}
-                                type="primary"
-                                size={'medium'}
-                                onClick={() => handleSave()}>
-                                Salvar
-                            </Button>
-                        </HappyProvider>
-                    )}
-                </div>
-            )}
-        </Form>
+                        )}
+                    </div>
+                )}
+            </Form>
+        </>
     );
 }
 

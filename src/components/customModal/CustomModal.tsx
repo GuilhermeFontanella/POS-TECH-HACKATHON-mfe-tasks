@@ -19,10 +19,6 @@ const CustomModal = ({
     data 
 }: CustomModalProps) => {
 
-  useEffect(() => {
-    console.log(data)
-  }, [isModalOpen])
-
     return (
         <Modal
         width={isMobile ? '100%' : 600}

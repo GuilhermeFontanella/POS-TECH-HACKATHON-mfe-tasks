@@ -15,7 +15,6 @@ import { useRegisterNewTask } from '../../hooks/useRegisterNewTask';
 import { useGetTaskList } from '../../hooks/useGetTaksList';
 import { useUpdateTask } from '../../hooks/useUpdateTask';
 import { serverTimestamp } from 'firebase/firestore';
-import dayjs from 'dayjs';
 
 type ModalType = "new" | "details" | "finish" | "pause" | "completed" | null;
 
@@ -78,26 +77,6 @@ const SettingsList = () => {
     setDones(done);
 
   }, [tasks]);
-
-  const handleTaskChange = async (taskId: string, data: Task) => {
-    const payload: any = {
-      ...data,
-      estimatedTime: data.estimatedTime
-        ? dayjs(data.estimatedTime).format('HH:mm')
-        : null,
-      deadline: data.deadline
-        ? dayjs(data.deadline).format('DD/MM/YYYY')
-        : null
-    }
-    try {
-      await update(taskId, payload);
-      openNotification('success', 'Alterações salvas');
-    } catch (error) {
-      openNotification('error', 'Ocorreu um erro ao salvar as informações.');
-      console.error(error);
-      throw error;
-    }
-  };
   
   const handleTaskStatusChange = async (taskId: string, newStatus: 'new' | 'doing' | 'done') => {
     const payLoad: any = {
@@ -123,17 +102,14 @@ const SettingsList = () => {
         return (
            <TaskDetails 
             isMobile={isMobile} 
-            data={findRelatedTaskSelected(cardSelected)}
-            onFormChange={(value) => {
-              handleTaskChange(cardSelected, value)
-            }} 
+            taskId={cardSelected}
             />
         );
       case "new":
         return (
            <TaskDetails 
             isMobile={isMobile} 
-            data={null}
+            taskId={null}
             onSave={(value) => handleSaveTask(value)} 
             />
         );
@@ -148,21 +124,7 @@ const SettingsList = () => {
             }}
           />
         );
-      case "pause":
-        /**
-         * MOVENDO O CARD PARA EM PROGRESSO
-         * Ao mover o card para a coluna de progresso o contador começará a correr e chamar a api para atualizar o campo da data de inicio
-         * e gravar na variavel de timer do redux para começar o contador.
-         * 
-         * CLICANDO EM FINISH 
-         * quando o usuario clicar em finish devo chamar a api para gravar a data de finalização, e mover o card para a coluna de finalizado e fechar o modal.
-         * 
-         * CLICANDO EM RESTART
-         * quando o usuario clicar em restart devo chamar a api para atualizar o tempo restante da tarefa, com isso a variavel gravada com o redux será atualizada. 
-         * obs* O timer consome o valor da variavel armazenada no redux.
-         * obs* Quando o timer chegar a zero, devo disparar uma notificação pro usuario avisando do termino da tarefa dando a opção de finalizar a 
-         * tarefa ou reinicar o contador. A lógica segue a mesma.
-         */        
+      case "pause":      
         return <TaskPause 
         data={cardSelected} 
         onRestart={() => {}} 
@@ -175,8 +137,7 @@ const SettingsList = () => {
         return (
           <TaskDetails
             isMobile={isMobile}
-            data={findRelatedTaskSelected(cardSelected)!}
-            isFinished={findRelatedTaskSelected(cardSelected)?.completed}
+            taskId={cardSelected}
           />
         );
 
@@ -206,10 +167,6 @@ const SettingsList = () => {
       handleTaskStatusChange(value.id, 'done');
     }
   }
-
-  useEffect(() => {
-    console.log(cardSelected);
-  }, [cardSelected])
 
   return (
     <>

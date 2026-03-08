@@ -16,6 +16,6 @@ export interface TaskCommons {
 }
 
 export interface Task extends TaskCommons {
-    cardColor:string;
+    cardColor: any;
     subTasks: TaskCommons[];
 }

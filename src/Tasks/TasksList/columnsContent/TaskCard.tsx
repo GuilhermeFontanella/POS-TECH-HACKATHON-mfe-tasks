@@ -120,7 +120,8 @@ const TaskCard = ({ data, columnIndex, isMobile, onModalOpen, onFinishTask, onPa
 
     return (
         <div className={classes.card}>
-            <Card 
+            <Card
+            style={{backgroundColor: data.cardColor}} 
             title={handleShowTitle(data?.title)} 
             variant="borderless" 
             extra={handleCardButtons(columnIndex)}>
