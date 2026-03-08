@@ -102,6 +102,22 @@ const TaskCard = ({ data, columnIndex, isMobile, onModalOpen, onFinishTask, onPa
         }
     }
 
+    function formatEstimatedTime(value: string): string {
+        const [hours, minutes] = value.split(":").map(Number);
+
+        const parts: string[] = [];
+
+        if (hours > 0) {
+            parts.push(`${hours} ${hours === 1 ? "hora" : "horas"}`);
+        }
+
+        if (minutes > 0) {
+            parts.push(`${minutes} ${minutes === 1 ? "minuto" : "minutos"}`);
+        }
+
+        return parts.join(" e ");
+    }
+
     return (
         <div className={classes.card}>
             <Card 
@@ -118,11 +134,11 @@ const TaskCard = ({ data, columnIndex, isMobile, onModalOpen, onFinishTask, onPa
                     <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
                         <div>
                             <span style={{paddingRight: '4px', color: 'darkGray'}}>Resumo:</span>
-                            <span>Lorem ipsum dolor sit amet</span>
+                            <span>{data.summary}</span>
                         </div>
                         <div>
                             <span style={{paddingRight: '4px', color: 'darkGray'}}>Horas estimadas:</span>
-                            <span>1h</span>
+                            <span>{formatEstimatedTime(data.estimatedTime)}</span>
                         </div>
                         <div>
                             <span style={{paddingRight: '4px', color: 'darkGray'}}>Tarefas:</span>
@@ -130,7 +146,7 @@ const TaskCard = ({ data, columnIndex, isMobile, onModalOpen, onFinishTask, onPa
                         </div>
                         <div>
                             <span style={{paddingRight: '4px', color: 'darkGray'}}>Data limite:</span>
-                            <span>Amanhã</span>
+                            <span>{data.deadline}</span>
                         </div>
                     </div>
                     {!isMobile && (

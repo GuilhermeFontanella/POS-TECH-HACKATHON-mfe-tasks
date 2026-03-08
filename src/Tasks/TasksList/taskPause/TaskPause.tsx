@@ -67,7 +67,7 @@ const TaskPause = ({onRestart, onFinish, onPause, data}: TaskPauseProps) => {
         <div style={{paddingBottom: '24px'}}>
             <Row>
                 <Col span={24}>
-                    <h1 style={{marginTop: 0}}>Titulo da tarefa</h1>
+                    <h1 style={{marginTop: 0}}>{task?.title}</h1>
                 </Col>
             </Row>
             <Row style={{marginBottom: '24px'}}>

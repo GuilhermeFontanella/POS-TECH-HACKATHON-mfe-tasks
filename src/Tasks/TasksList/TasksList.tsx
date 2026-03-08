@@ -15,6 +15,7 @@ import { useRegisterNewTask } from '../../hooks/useRegisterNewTask';
 import { useGetTaskList } from '../../hooks/useGetTaksList';
 import { useUpdateTask } from '../../hooks/useUpdateTask';
 import { serverTimestamp } from 'firebase/firestore';
+import dayjs from 'dayjs';
 
 type ModalType = "new" | "details" | "finish" | "pause" | "completed" | null;
 
@@ -79,8 +80,17 @@ const SettingsList = () => {
   }, [tasks]);
 
   const handleTaskChange = async (taskId: string, data: Task) => {
+    const payload: any = {
+      ...data,
+      estimatedTime: data.estimatedTime
+        ? dayjs(data.estimatedTime).format('HH:mm')
+        : null,
+      deadline: data.deadline
+        ? dayjs(data.deadline).format('DD/MM/YYYY')
+        : null
+    }
     try {
-      await update(taskId, data);
+      await update(taskId, payload);
       openNotification('success', 'Alterações salvas');
     } catch (error) {
       openNotification('error', 'Ocorreu um erro ao salvar as informações.');
@@ -115,7 +125,7 @@ const SettingsList = () => {
             isMobile={isMobile} 
             data={findRelatedTaskSelected(cardSelected)}
             onFormChange={(value) => {
-              handleTaskChange(cardSelected.id, value)
+              handleTaskChange(cardSelected, value)
             }} 
             />
         );
