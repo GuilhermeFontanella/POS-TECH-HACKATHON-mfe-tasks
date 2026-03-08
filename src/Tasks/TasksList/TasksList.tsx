@@ -1,5 +1,5 @@
 import * as classes from './TasksList.css';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDragAndDrop } from '@formkit/drag-and-drop/react';
 import { Button, Col, Row, message  } from 'antd';
 import { useDevice } from '../../hooks/useDevice';
@@ -14,37 +14,10 @@ import type { Task } from '../../types/task.interface';
 import { useRegisterNewTask } from '../../hooks/useRegisterNewTask';
 import { useGetTaskList } from '../../hooks/useGetTaksList';
 import { useUpdateTask } from '../../hooks/useUpdateTask';
-import { useTask } from '../../hooks/useTask';
-
-// const todoItems: any[] = [
-//   {
-//     id: 1,
-//     title: 'Titulo',
-//     summary: 'Resumo da tarefa',
-//     description: 'Descrição mais longa',
-//     estimatedTime: 10,
-//     tasks: [
-//       { 
-//         id: 1,
-//         title: 'titulo da tarefa',
-//         summary: 'resumo da tarefa secundaria',
-//         estimatedTime: 5, // em milissegundos
-//         deadline: '10/03/2026 - 23:59:59',
-//         completed: true
-//       },
-//     ],
-//     deadline: '10/03/2026 - 23:59:59',
-//     completed: true,
-//     dateCompletation: null,
-//     dateCreation: '09/03/2026 - 23:00:00',
-//     status: 'doing' // 'new' || 'doing' || 'done' e então preencher as listas.
-//   }
-// ];
 
 type ModalType = "new" | "details" | "finish" | "pause" | "completed" | null;
 
 const SettingsList = () => {
-  //const { task, taskById } = useTask();
   const { data: tasks } = useGetTaskList();
   const { update } = useUpdateTask();
   const { mutateAsync } = useRegisterNewTask();
@@ -55,16 +28,24 @@ const SettingsList = () => {
   const [todoList, todos, setTodos] = useDragAndDrop<HTMLUListElement, Task>([], { 
     group: "tasks",
     onDragend(data) {
-        console.log(todos)
+      const valueDragged = data.draggedNode.data.value as Task;
+      handleDragCard(valueDragged);
     },
   });
   const [doingList, doing, setDoing] = useDragAndDrop<HTMLUListElement, Task>([], { 
     group: "tasks",
     onDragend(data) {
-        console.log(doing)
-    }
+      const valueDragged = data.draggedNode.data.value as Task;
+      handleDragCard(valueDragged);
+    },
   });
-  const [doneList, dones, setDones] = useDragAndDrop<HTMLUListElement, Task>([], { group: "tasks" });
+  const [doneList, dones, setDones] = useDragAndDrop<HTMLUListElement, Task>([], { 
+    group: "tasks",
+    onDragend(data) {
+      const valueDragged = data.draggedNode.data.value as Task;
+      handleDragCard(valueDragged);
+    },
+  });
 
   const findRelatedTaskSelected = (taskId: any) => {
     const all = [...todos, ...doing, ...dones];
@@ -187,28 +168,19 @@ const SettingsList = () => {
     }
   }
 
+  const handleDragCard = (value: Task) => {
+    if (todos.includes(value)) {
+      handleTaskStatusChange(value.id, 'new');
+    } else if (doing.includes(value)) {
+      handleTaskStatusChange(value.id, 'doing')
+    } else if (dones.includes(value)) {
+      handleTaskStatusChange(value.id, 'done');
+    }
+  }
+
   useEffect(() => {
     console.log(cardSelected);
   }, [cardSelected])
-
-  // useEffect(() => {
-  //   if (!tasks) return;
-
-  //   const todo: Task[] = [];
-  //   const doing: Task[] = [];
-  //   const done: Task[] = [];
-
-  //   tasks.forEach((task) => {
-  //     if (task.status === "new") todo.push(task);
-  //     else if (task.status === "doing") doing.push(task);
-  //     else if (task.status === "done") done.push(task);
-  //   });
-
-  //   setTodoItems(todo);
-  //   setDoingItems(doing);
-  //   setDoneItems(done);
-
-  // }, [tasks]);
 
   return (
     <>
