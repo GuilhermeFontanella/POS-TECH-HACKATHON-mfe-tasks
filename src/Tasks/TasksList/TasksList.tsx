@@ -89,6 +89,7 @@ const SettingsList = () => {
   };
 
   const handleTaskStatusChange = async (taskId: string, newStatus: 'new' | 'doing' | 'done') => {
+    console.log(taskId)
     await update(taskId, {
       status: newStatus
     });
@@ -121,7 +122,8 @@ const SettingsList = () => {
             isMobile={isMobile}
             data={findRelatedTaskSelected(cardSelected)}
             onFinishTask={() => {
-              handleTaskStatusChange(cardSelected?.id, 'done')
+              console.log(cardSelected)
+              handleTaskStatusChange(findRelatedTaskSelected(cardSelected)?.id, 'done')
               setModalType(null);
             }}
           />
@@ -214,6 +216,7 @@ const SettingsList = () => {
           columnIndex={0}
           onDetailsTask={() => setModalType('details')}
           onSelectTask={setCardSelected}
+          onStart={(taskId) => handleTaskStatusChange(taskId, 'doing')}
           />
         </Col>
         <Col flex={isMobile ? '280px' : undefined} span={8}>

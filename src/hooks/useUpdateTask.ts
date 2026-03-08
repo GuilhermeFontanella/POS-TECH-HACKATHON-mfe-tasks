@@ -1,34 +1,29 @@
-import { useState } from "react";
 import type { Task } from "../types/task.interface";
 import { updateTask } from "../services/tasks/task.service";
-
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 
 export const useUpdateTask = () => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const update = async (id: string, data: Partial<Task>) => {
-    try {
-      setLoading(true);
-      setError(null);
+  const mutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Task> }) =>
+      updateTask(id, data),
 
-      const updatedTask = await updateTask(id, data);
-
-      return updatedTask;
-
-    } catch (err: any) {
-      setError(err.message);
-      throw err;
-
-    } finally {
-      setLoading(false);
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["tasks"]
+      });
     }
+  });
+
+  const update = (id: string, data: Partial<Task>) => {
+    return mutation.mutateAsync({ id, data });
   };
 
   return {
     update,
-    loading,
-    error
+    loading: mutation.isPending,
+    error: mutation.error
   };
 };

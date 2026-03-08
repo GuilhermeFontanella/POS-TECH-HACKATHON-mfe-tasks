@@ -1,19 +1,21 @@
 import { Card, Tooltip, Button } from 'antd';
 import { CheckOutlined, ClockCircleOutlined, CaretRightOutlined, EyeOutlined } from '@ant-design/icons';
 import * as classes from './ColumnsContent.css';
+import type { Task } from '../../../types/task.interface';
 
 interface TaskCardProps {
-    data: any;
+    data: Task;
     columnIndex: number;
     isMobile: boolean;
     onModalOpen: (value: boolean) => void;
     onFinishTask?: (value: boolean) => void;
     onPauseTask?: (value: boolean) => void;
     onDetailsTask?: (value: boolean) => void;
-    onSelectTask?: (value: number) => void;
+    onSelectTask?: (taskId: any) => void;
+    onStart?: (taskId: any) => void;
 }
 
-const TaskCard = ({ data, columnIndex, isMobile, onModalOpen, onFinishTask, onPauseTask, onDetailsTask, onSelectTask }: TaskCardProps) => {
+const TaskCard = ({ data, columnIndex, isMobile, onModalOpen, onFinishTask, onPauseTask, onDetailsTask, onSelectTask, onStart }: TaskCardProps) => {
 
     const handleShowTitle = (text: string) => {
         if (columnIndex != 1) {
@@ -33,7 +35,9 @@ const TaskCard = ({ data, columnIndex, isMobile, onModalOpen, onFinishTask, onPa
                 return (
                     <Button 
                     className={classes.actionButton} 
-                    onClick={() => { }} 
+                    onClick={() => {
+                        onStart?.(data.id)
+                    }} 
                     type="primary" 
                     icon={<CaretRightOutlined />} 
                     size={'medium'}>

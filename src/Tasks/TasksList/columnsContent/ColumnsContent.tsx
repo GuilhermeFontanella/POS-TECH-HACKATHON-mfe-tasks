@@ -11,8 +11,8 @@ interface ColumnsContentProps {
     onPauseTask?: () => void;
     onDetailsTask?: () => void;
     columnIndex: number;
-    //ref: React.Ref<HTMLUListElement>;
     onSelectTask?: (value: number) => void;
+    onStart?: (taskId: any) => void;
 }
 
 const ColumnsContent = forwardRef<HTMLUListElement, ColumnsContentProps>(
@@ -26,7 +26,8 @@ const ColumnsContent = forwardRef<HTMLUListElement, ColumnsContentProps>(
             onPauseTask,
             onDetailsTask,
             columnIndex,
-            onSelectTask
+            onSelectTask,
+            onStart
         }, 
         ref
     ) => {
@@ -45,7 +46,8 @@ const ColumnsContent = forwardRef<HTMLUListElement, ColumnsContentProps>(
                     onFinishTask={onFinishTask}
                     onPauseTask={onPauseTask}
                     onDetailsTask={onDetailsTask}
-                    onSelectTask={onSelectTask} />
+                    onSelectTask={onSelectTask}
+                    onStart={onStart} />
                 </li>
             ))}
             </ul>
