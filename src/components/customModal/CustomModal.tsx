@@ -1,5 +1,4 @@
 import { Modal } from 'antd';
-import { useEffect } from 'react';
 
 interface CustomModalProps {
     content: React.ReactNode;

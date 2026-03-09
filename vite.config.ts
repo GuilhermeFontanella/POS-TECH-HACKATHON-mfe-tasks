@@ -18,7 +18,11 @@ export default defineConfig({
       exposes: {
         './Tasks': './src/bootstrap.tsx',
       },
-      shared: ['react', 'react-dom'],
+      shared: [
+        'react',
+        'react-dom',
+        '@tanstack/react-query'
+      ],
     })
   ],
   build: {
@@ -30,7 +34,7 @@ export default defineConfig({
   optimizeDeps: {
     exclude: [
       '@formkit/drag-and-drop',
-      '@formkit/drag-and-drop/solid'
+      '@formkit/drag-and-drop/solid',
   ],
   }
 });

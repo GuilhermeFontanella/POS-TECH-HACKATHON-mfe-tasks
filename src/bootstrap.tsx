@@ -1,8 +1,9 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
 import Tasks from "./Tasks/Tasks";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 //import App from "./App";
 
+const queryClient = new QueryClient();
 
 class SettingsMFE extends HTMLElement {
     private root: ReactDOM.Root | null = null;
@@ -15,9 +16,9 @@ class SettingsMFE extends HTMLElement {
             this.root = ReactDOM.createRoot(this);
         }
         this.root.render(
-            <React.StrictMode>
+            <QueryClientProvider client={queryClient}>
                 <Tasks />
-            </React.StrictMode>
+            </QueryClientProvider>
         );
     }
 

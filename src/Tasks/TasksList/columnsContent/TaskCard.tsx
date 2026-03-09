@@ -60,7 +60,7 @@ const TaskCard = ({ data, columnIndex, isMobile, onModalOpen, onFinishTask, onPa
                                 }}>
                                     <span className={classes.actionText}>Finalizar</span>
                                 </Button>
-                                <Tooltip title="Pausar tarefa">
+                             
                                 <Button 
                                 className={classes.actionButton} 
                                 type="primary" 
@@ -71,9 +71,9 @@ const TaskCard = ({ data, columnIndex, isMobile, onModalOpen, onFinishTask, onPa
                                     onPauseTask?.(true); 
                                     onSelectTask?.(data?.id)
                                 }}>
-                                    <span className={classes.actionText}>10:23</span>
+                                    <span className={classes.actionText}>Pausar tarefa</span>
                                 </Button>
-                                </Tooltip>
+                           
                             </div>
                         ) : (
                             <div style={{ display: 'flex', gap: 8, margin: 'auto' }}>

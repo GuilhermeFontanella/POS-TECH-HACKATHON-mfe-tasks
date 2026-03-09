@@ -16,7 +16,7 @@ interface TaskPauseProps {
 }
 
 const TaskPause = ({onRestart, onFinish, onPause, data}: TaskPauseProps) => {
-    const { task, loading, taskById } = useTask();
+    const { task, taskById } = useTask();
     const { update } = useUpdateTask();
 
     const estimatedMs = useMemo(() => {

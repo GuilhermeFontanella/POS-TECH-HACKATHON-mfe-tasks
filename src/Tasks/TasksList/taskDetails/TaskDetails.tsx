@@ -8,7 +8,7 @@ import type { CollapseProps } from 'antd';
 import { Typography } from 'antd';
 const { Text } = Typography;
 import { useDebounce } from '../../../hooks/useDebounce';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { HappyProvider } from '@ant-design/happy-work-theme';
 import * as classes from './TaskDetails.css'
 import type { Task, TaskCommons } from '../../../types/task.interface';
@@ -25,7 +25,7 @@ const TaskDetails = ({ isMobile, taskId, onSave }: TaskDetailsProps) => {
     const [form] = Form.useForm();
     const { update } = useUpdateTask();
     const [api, contextHolder] = message.useMessage();
-    const { task, loading, taskById } = useTask();
+    const { task, taskById } = useTask();
     const values = Form.useWatch([], form);
     const debouncedForm = useDebounce(values, 1000);
     const formatTime = 'HH:mm';

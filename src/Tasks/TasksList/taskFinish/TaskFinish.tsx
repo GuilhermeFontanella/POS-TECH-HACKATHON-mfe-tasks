@@ -1,4 +1,4 @@
-import { CheckOutlined, DeleteOutlined } from "@ant-design/icons";
+import { CheckOutlined } from "@ant-design/icons";
 import { Form, type CollapseProps, Tooltip, Checkbox, Input, Row, Col, TimePicker, DatePicker, Button, Collapse, ColorPicker } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import { Typography } from 'antd';
