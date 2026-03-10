@@ -219,7 +219,6 @@ const SettingsList = () => {
           onDetailsTask={() => setModalType('details')}
           onSelectTask={setCardSelected}
           onStart={(taskId) => handleTaskStatusChange(taskId, 'doing')}
-          preferences={preferences}
           />
         </Col>
         <Col flex={isMobile ? '280px' : undefined} span={8}>
@@ -234,7 +233,6 @@ const SettingsList = () => {
           onPauseTask={() => setModalType('pause')}
           onDetailsTask={() => setModalType('details')}
           onSelectTask={setCardSelected}
-          preferences={preferences}
           />
         </Col>
         <Col flex={isMobile ? '280px' : undefined} span={8}>
@@ -247,7 +245,6 @@ const SettingsList = () => {
           columnIndex={2}
           onDetailsTask={() => setModalType('completed')}
           onSelectTask={setCardSelected}
-          preferences={preferences}
           />
         </Col>
       </Row>
