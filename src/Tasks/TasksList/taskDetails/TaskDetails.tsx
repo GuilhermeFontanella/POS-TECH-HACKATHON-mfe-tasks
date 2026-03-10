@@ -14,14 +14,16 @@ import * as classes from './TaskDetails.css'
 import type { Task, TaskCommons } from '../../../types/task.interface';
 import { useTask } from '../../../hooks/useTask';
 import { useUpdateTask } from '../../../hooks/useUpdateTask';
+import type { SettingsState } from '../../../store/settingsSlice';
 
 interface TaskDetailsProps {
     isMobile: boolean;
     taskId: any;
     onSave?: (value?: any) => void;
+    preferences: SettingsState;
 }
 
-const TaskDetails = ({ isMobile, taskId, onSave }: TaskDetailsProps) => {
+const TaskDetails = ({ isMobile, taskId, onSave, preferences }: TaskDetailsProps) => {
     const [form] = Form.useForm();
     const { update } = useUpdateTask();
     const [api, contextHolder] = message.useMessage();
@@ -138,14 +140,14 @@ const TaskDetails = ({ isMobile, taskId, onSave }: TaskDetailsProps) => {
           console.error(error);
           throw error;
         }
-      };
+    };
 
-        const openNotification = (type: 'error' | 'success', message: string) => {
-            api.open({
-                type: type,
-                content: message
-            })
-        }
+    const openNotification = (type: 'error' | 'success', message: string) => {
+        api.open({
+            type: type,
+            content: message
+        })
+    }
 
     useEffect(() => {
         if (!debouncedForm) return;
@@ -196,8 +198,7 @@ const TaskDetails = ({ isMobile, taskId, onSave }: TaskDetailsProps) => {
                 labelCol={{ span: 12 }}
                 wrapperCol={{ span: 24 }}
                 layout="vertical"
-                disabled={false}
-                style={isMobile ? { height: '100vh', overflowY: 'auto', maxWidth: 600 } : { maxWidth: 600 }}
+                style={isMobile ? { height: '100vh', overflowY: 'auto', maxWidth: 600, fontSize: preferences.fontSize } : { maxWidth: 600, fontSize: preferences.fontSize }}
             >
                 {!task && (<h1>Nova tarefa</h1>)}
                 <Form.Item 
@@ -205,17 +206,17 @@ const TaskDetails = ({ isMobile, taskId, onSave }: TaskDetailsProps) => {
                 layout="vertical" 
                 name={'title'}
                 rules={[{required: true, message: 'Campo obrigatório'}]}>
-                    <Input required allowClear={true} disabled={!!task?.finishedAt} />
+                    <Input style={{fontSize: preferences.fontSize}} required allowClear={true} disabled={!!task?.finishedAt} />
                 </Form.Item>
                 <Form.Item 
                 rules={[{required: true, message: 'Campo obrigatório'}]} 
                 label="Resumo" 
                 layout="vertical" 
                 name={'summary'}>
-                    <Input allowClear={true} disabled={!!task?.finishedAt} />
+                    <Input style={{fontSize: preferences.fontSize}} allowClear={true} disabled={!!task?.finishedAt} />
                 </Form.Item>
                 <Form.Item label="Descrição" layout="vertical" name={'description'}>
-                    <TextArea allowClear={true} disabled={!!task?.finishedAt} rows={4} maxLength={3000} />
+                    <TextArea style={{fontSize: preferences.fontSize}} allowClear={true} disabled={!!task?.finishedAt} rows={4} maxLength={3000} />
                 </Form.Item>
                 <Row>
                     <Col span={12}>
@@ -227,30 +228,30 @@ const TaskDetails = ({ isMobile, taskId, onSave }: TaskDetailsProps) => {
                             <TimePicker  
                             allowClear={true} 
                             disabled={!!task?.finishedAt} 
-                            style={{ width: '95%' }} 
+                            style={{ width: '95%', fontSize: preferences.fontSize }} 
                             format={formatTime} />
                         </Form.Item>
                     </Col>
                     <Col span={12}>
                         <Form.Item 
                         rules={[{required: true, message: 'Campo obrigatório'}]} 
-                        label="Data limite" 
+                        label="Data limite"
                         name={'deadline'}>
                             <DatePicker 
                             disabledDate={(current) => current && current < dayjs().startOf('day')} 
                             disabled={!!task?.finishedAt} 
-                            style={{ width: '100%' }} 
+                            style={{ width: '100%', fontSize: preferences.fontSize }} 
                             format={formatDate} />
                         </Form.Item>
                     </Col>
                 </Row>
 
                 <div style={{ marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: preferences.fontSize }}>
                         Subtarefas
-                        {!!!task?.finishedAt && (
-                            <Button onClick={() => { }} type="primary" icon={<PlusOutlined />} size={'medium'}>
-                                <span>Adicionar nova subtarefa</span>
+                        {task?.status !== 'done' && (
+                            <Button style={{fontSize: preferences.fontSize}} onClick={() => { }} type="primary" icon={<PlusOutlined />} size={'medium'}>
+                                {preferences?.complexityLevel != 1 && (<span>Adicionar nova subtarefa</span>)}
                             </Button>
                         )}
                     </div>
@@ -267,11 +268,11 @@ const TaskDetails = ({ isMobile, taskId, onSave }: TaskDetailsProps) => {
                     </div>
                 </div>
 
-                <Form.Item label="Cor do Card" name={'cardColor'}>
+                <Form.Item label={<span style={{fontSize: preferences.fontSize}}>Cor do Card</span>} name={'cardColor'}>
                     <ColorPicker format='hex' allowClear={true} disabled={!!task?.finishedAt} />
                 </Form.Item>
 
-                {!task && (
+                {!taskId && (
                     <div style={{ display: 'flex', justifyContent: 'end', marginBottom: '16px' }}>
                         {!isMobile ? (
                             <Tooltip title={'Finalizar'}>
@@ -282,7 +283,7 @@ const TaskDetails = ({ isMobile, taskId, onSave }: TaskDetailsProps) => {
                                         type="primary" icon={<CheckOutlined />}
                                         size={'medium'}
                                         onClick={() => onSave?.(debouncedForm)}>
-                                        <span className={classes.actionText}>Salvar</span>
+                                        {preferences?.complexityLevel != 1 && (<span className={classes.actionText}>Salvar</span>)}
                                     </Button>
 
                                 </HappyProvider>
@@ -293,8 +294,9 @@ const TaskDetails = ({ isMobile, taskId, onSave }: TaskDetailsProps) => {
                                     style={{ marginRight: '8px' }}
                                     type="primary"
                                     size={'medium'}
-                                    onClick={() => handleSave()}>
-                                    Salvar
+                                    onClick={() => handleSave()}
+                                    icon={<CheckOutlined />}>
+                                    {preferences?.complexityLevel != 1 && (<span className={classes.actionText}>Salvar</span>)}
                                 </Button>
                             </HappyProvider>
                         )}

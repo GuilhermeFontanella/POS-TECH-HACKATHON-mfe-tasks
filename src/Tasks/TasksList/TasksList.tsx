@@ -15,10 +15,12 @@ import { useRegisterNewTask } from '../../hooks/useRegisterNewTask';
 import { useGetTaskList } from '../../hooks/useGetTaksList';
 import { useUpdateTask } from '../../hooks/useUpdateTask';
 import { serverTimestamp } from 'firebase/firestore';
+import { usePreferences } from '../../hooks/usePreferences';
 
 type ModalType = "new" | "details" | "finish" | "pause" | "completed" | null;
 
 const SettingsList = () => {
+  const { preferences } = usePreferences();
   const { data: tasks } = useGetTaskList();
   const { update } = useUpdateTask();
   const { mutateAsync } = useRegisterNewTask();
@@ -85,12 +87,14 @@ const SettingsList = () => {
 
     if (newStatus === 'doing') {
       payLoad.startedAt = serverTimestamp();
+      payLoad.finishedAt = null;
     }
     if (newStatus === 'done') {
       payLoad.finishedAt = serverTimestamp();
     }
     if (newStatus === 'new') {
       payLoad.startedAt = null;
+      payLoad.finishedAt = null;
     }
     
     await update(taskId, payLoad);
@@ -103,6 +107,7 @@ const SettingsList = () => {
            <TaskDetails 
             isMobile={isMobile} 
             taskId={cardSelected}
+            preferences={preferences}
             />
         );
       case "new":
@@ -111,6 +116,7 @@ const SettingsList = () => {
             isMobile={isMobile} 
             taskId={null}
             onSave={(value) => handleSaveTask(value)} 
+            preferences={preferences}
             />
         );
       case "finish":
@@ -122,6 +128,7 @@ const SettingsList = () => {
               handleTaskStatusChange(findRelatedTaskSelected(cardSelected)?.id, 'done')
               setModalType(null);
             }}
+            preferences={preferences}
           />
         );
       case "pause":      
@@ -132,12 +139,14 @@ const SettingsList = () => {
           handleTaskStatusChange(findRelatedTaskSelected(cardSelected)?.id, 'done')
           setModalType(null);
         }}
-        onPause={() => {}} />;
+        onPause={() => {}}
+        preferences={preferences} />;
       case "completed":
         return (
           <TaskDetails
             isMobile={isMobile}
             taskId={cardSelected}
+            preferences={preferences}
           />
         );
 
@@ -168,6 +177,10 @@ const SettingsList = () => {
     }
   }
 
+  useEffect(() => {
+    console.log(preferences)
+  }, [preferences])
+
   return (
     <>
       {contextHolder}
@@ -176,12 +189,17 @@ const SettingsList = () => {
         {!isMobile ? (
           <div style={{display: 'flex', justifyContent: 'end', maxWidth: '1200px', margin: 'auto', paddingTop: '24px', paddingBottom: '24px'}}>
             <Button onClick={() => {setModalType('new'); setCardSelected(null)}} className={classes.actionButton} shape="default" type='primary' icon={<PlusOutlined />}>
-              <span className={classes.actionText}>Nova tarefa</span>
+              {preferences.complexityLevel != 1 && (<span className={classes.actionText}>Nova tarefa</span>)}
             </Button>
           </div>
         ): (
           <div style={{ marginTop: '16px', marginBottom: '24px', display: 'flex', justifyContent: 'start'}}>
-            <Button onClick={() => {setModalType('new'); setCardSelected(null)}} shape="default" type='primary' icon={<PlusOutlined />}>Nova tarefa</Button>
+            <Button 
+            onClick={() => {setModalType('new'); setCardSelected(null)}} 
+            shape="default" 
+            type='primary' icon={<PlusOutlined size={preferences.fontSize} />}>
+              {preferences.complexityLevel != 1 && (<span style={{fontSize: preferences.fontSize}}>Nova tarefa</span>)}
+            </Button>
           </div>
         )}
         </Col>
@@ -201,6 +219,7 @@ const SettingsList = () => {
           onDetailsTask={() => setModalType('details')}
           onSelectTask={setCardSelected}
           onStart={(taskId) => handleTaskStatusChange(taskId, 'doing')}
+          preferences={preferences}
           />
         </Col>
         <Col flex={isMobile ? '280px' : undefined} span={8}>
@@ -215,6 +234,7 @@ const SettingsList = () => {
           onPauseTask={() => setModalType('pause')}
           onDetailsTask={() => setModalType('details')}
           onSelectTask={setCardSelected}
+          preferences={preferences}
           />
         </Col>
         <Col flex={isMobile ? '280px' : undefined} span={8}>
@@ -227,6 +247,7 @@ const SettingsList = () => {
           columnIndex={2}
           onDetailsTask={() => setModalType('completed')}
           onSelectTask={setCardSelected}
+          preferences={preferences}
           />
         </Col>
       </Row>

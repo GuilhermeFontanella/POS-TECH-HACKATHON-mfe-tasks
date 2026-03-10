@@ -2,6 +2,7 @@ import { Card, Tooltip, Button } from 'antd';
 import { CheckOutlined, ClockCircleOutlined, CaretRightOutlined, EyeOutlined } from '@ant-design/icons';
 import * as classes from './ColumnsContent.css';
 import type { Task } from '../../../types/task.interface';
+import { usePreferences } from '../../../hooks/usePreferences';
 
 interface TaskCardProps {
     data: Task;
@@ -16,14 +17,14 @@ interface TaskCardProps {
 }
 
 const TaskCard = ({ data, columnIndex, isMobile, onModalOpen, onFinishTask, onPauseTask, onDetailsTask, onSelectTask, onStart }: TaskCardProps) => {
-
+    const {preferences} = usePreferences();
     const handleShowTitle = (text: string) => {
         if (columnIndex != 1) {
-            return text;
+            return <span style={{fontSize: preferences.fontSize}}>{text}</span>;
         } else {
             return (
                <Tooltip placement="topLeft" title={text}>
-                    {text}
+                    <span style={{fontSize: preferences.fontSize}}>{text}</span>
                 </Tooltip> 
             );
         }
@@ -128,28 +129,49 @@ const TaskCard = ({ data, columnIndex, isMobile, onModalOpen, onFinishTask, onPa
             variant="borderless" 
             extra={handleCardButtons(columnIndex)}>
                 <div 
-                className={classes.actionButton} style={{width: '100%'}}
+                className={classes.actionButton} style={{width: '100%', fontSize: preferences.fontSize}}
                 onClick={() => {
                     onModalOpen(true); 
                     onDetailsTask?.(true); 
                     onSelectTask?.(data?.id);
                 }}>
                     <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
+                        {preferences.complexityLevel != 1 && (
+                            <>
+                                <div>
+                                    <span style={{paddingRight: '4px', color: 'darkGray'}}>Resumo:</span>
+                                    <span>{data.summary}</span>
+                                </div>
+                                <div>
+                                    <span style={{paddingRight: '4px', color: 'darkGray'}}>Horas estimadas:</span>
+                                    <span>{formatEstimatedTime(data.estimatedTime)}</span>
+                                </div>
+                            </>
+                        )
+                            }
                         <div>
-                            <span style={{paddingRight: '4px', color: 'darkGray'}}>Resumo:</span>
-                            <span>{data.summary}</span>
-                        </div>
-                        <div>
-                            <span style={{paddingRight: '4px', color: 'darkGray'}}>Horas estimadas:</span>
-                            <span>{formatEstimatedTime(data.estimatedTime)}</span>
-                        </div>
-                        <div>
-                            <span style={{paddingRight: '4px', color: 'darkGray'}}>Tarefas:</span>
-                            <span>5/6 concluídas</span>
-                        </div>
-                        <div>
-                            <span style={{paddingRight: '4px', color: 'darkGray'}}>Data limite:</span>
-                            <span>{data.deadline}</span>
+                            {preferences.complexityLevel === 1 && (
+                                <>
+                                    {data.finishedAt ? (
+                                        <>
+                                            <span style={{paddingRight: '4px', color: 'darkGray'}}>Finalizado em:</span>
+                                            <span>{data.finishedAt?.toDate().toLocaleString()}</span>
+                                        </>
+                                    ) : data.startedAt ? (
+                                        <>
+                                            <span style={{paddingRight: '4px', color: 'darkGray'}}>Data limite:</span>
+                                            <span>{data.deadline}</span>
+                                        </>
+                                    ) : data.status === 'new' && (
+                                        <>
+                                        <div>
+                                            <span style={{paddingRight: '4px', color: 'darkGray'}}>Horas estimadas:</span>
+                                            <span>{formatEstimatedTime(data.estimatedTime)}</span>
+                                        </div>
+                                        </>
+                                    )}
+                                </>
+                            )}
                         </div>
                     </div>
                     {!isMobile && (

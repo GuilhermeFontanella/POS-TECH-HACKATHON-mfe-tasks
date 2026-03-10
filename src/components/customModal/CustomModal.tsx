@@ -20,7 +20,7 @@ const CustomModal = ({
 
     return (
         <Modal
-        width={isMobile ? '100%' : 600}
+        width={isMobile ? 'fit-content' : 600}
         centered={!isMobile}
         footer={null}
         style={isMobile ? { top: 0, padding: 0, marginBottom: '48px' } : undefined}

@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-interface SettingsState {
+export interface SettingsState {
   fontSize: number;
   lineHeight: number;
   cognitiveAlert: boolean;

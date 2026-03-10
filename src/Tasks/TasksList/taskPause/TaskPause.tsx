@@ -7,15 +7,17 @@ import { useTask } from "../../../hooks/useTask";
 import dayjs from 'dayjs';
 import { useUpdateTask } from "../../../hooks/useUpdateTask";
 import { serverTimestamp } from "firebase/firestore";
+import type { SettingsState } from "../../../store/settingsSlice";
 
 interface TaskPauseProps {
     onRestart: () => void;
     onFinish: () => void;
     onPause: (taskId: any) => void;
     data: any;
+    preferences: SettingsState
 }
 
-const TaskPause = ({onRestart, onFinish, onPause, data}: TaskPauseProps) => {
+const TaskPause = ({onRestart, onFinish, onPause, data, preferences}: TaskPauseProps) => {
     const { task, taskById } = useTask();
     const { update } = useUpdateTask();
 
@@ -71,7 +73,7 @@ const TaskPause = ({onRestart, onFinish, onPause, data}: TaskPauseProps) => {
                 </Col>
             </Row>
             <Row style={{marginBottom: '24px'}}>
-                <Col span={12}>
+                <Col span={preferences.complexityLevel != 1 ? 12 : 24}>
                     <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
                         <span style={{paddingBottom: '16px', fontWeight: '600', fontSize: '16px'}}>Tempo restante</span>
                         <Timer 
@@ -80,30 +82,32 @@ const TaskPause = ({onRestart, onFinish, onPause, data}: TaskPauseProps) => {
                         totalTime={estimatedMs} />
                     </div>
                 </Col>
-                <Col span={12}>
-                <div >
-                    <Descriptions column={1} title="Informações da tarefa">
-                        <Descriptions.Item label="Tempo estimado">{task?.estimatedTime ?? '-'}</Descriptions.Item>
-                        <Descriptions.Item label="Criação">
-                            {
-                                task?.createdAt
-                                    ? dayjs(task.createdAt.toDate()).format('DD/MM/YYYY')
-                                    : '-'
-                            }
-                        </Descriptions.Item>
-                        <Descriptions.Item label="Iniciada em">
-                            {
-                                task?.startedAt
-                                    ? dayjs(task.startedAt.toDate()).format('DD/MM/YYYY [às] HH:mm')
-                                    : '-'
-                            }
-                        </Descriptions.Item>
-                        <Descriptions.Item label="Data limite">
-                            {task?.deadline}
-                        </Descriptions.Item>
-                    </Descriptions>
-                </div>
-                </Col>
+                {preferences.complexityLevel != 1 && (
+                    <Col span={12}>
+                        <div >
+                            <Descriptions column={1} title="Informações da tarefa">
+                                <Descriptions.Item label="Tempo estimado">{task?.estimatedTime ?? '-'}</Descriptions.Item>
+                                <Descriptions.Item label="Criação">
+                                    {
+                                        task?.createdAt
+                                            ? dayjs(task.createdAt.toDate()).format('DD/MM/YYYY')
+                                            : '-'
+                                    }
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Iniciada em">
+                                    {
+                                        task?.startedAt
+                                            ? dayjs(task.startedAt.toDate()).format('DD/MM/YYYY [às] HH:mm')
+                                            : '-'
+                                    }
+                                </Descriptions.Item>
+                                <Descriptions.Item label="Data limite">
+                                    {task?.deadline}
+                                </Descriptions.Item>
+                            </Descriptions>
+                        </div>
+                    </Col>
+                )}
             </Row>
             <Row>
                 <Col span={24}>
@@ -113,30 +117,37 @@ const TaskPause = ({onRestart, onFinish, onPause, data}: TaskPauseProps) => {
                         style={{marginRight: '8px'}} 
                         icon={<RedoOutlined />} 
                         size={'medium'} 
-                        children={'Reiniciar'} 
                         onClick={() => {
                             onRestart();
                             handleRestartTask(task?.id);
-                        }} />
+                        }}>
+                            {preferences.complexityLevel != 1 && (<span>Reiniciar</span>)}
+                        </Button>
                         <HappyProvider>
                             <Button 
                             style={{marginRight: '8px'}} 
                             type="primary" 
                             icon={<CheckOutlined />} 
                             size={'medium'} 
-                            children={'Finalizar'} 
-                            onClick={onFinish} />
+                            onClick={onFinish}>
+                                {preferences.complexityLevel != 1 && (<span>Finalizar</span>)}
+                            </Button>
                         </HappyProvider>
                         <Button 
                         type="primary" 
                         danger={!task?.pausedAt ? true : false } 
                         icon={task?.pausedAt ? <CaretRightOutlined /> : <PauseOutlined /> } 
                         size={'medium'} 
-                        children={task?.pausedAt ? 'Continuar' : 'Pausar'} 
                         onClick={() => {
                             onPause(task?.id);
                             handleTaskPause(task?.id)
-                        }} />
+                        }}>
+                            {preferences.complexityLevel != 1 && (
+                                <span>
+                                    {task?.pausedAt ? 'Continuar' : 'Pausar'}
+                                </span>
+                            )}
+                        </Button>
                     </div>
                 </Col>
             </Row>

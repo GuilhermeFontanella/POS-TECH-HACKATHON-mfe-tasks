@@ -7,14 +7,16 @@ import { HappyProvider } from "@ant-design/happy-work-theme";
 const { Text } = Typography;
 import * as classes from './TaskFinish.css'
 import { useEffect } from "react";
+import type { SettingsState } from "../../../store/settingsSlice";
 
 interface TaskFinishProps {
     isMobile: boolean;
     data: any;
     onFinishTask: () => void;
+    preferences: SettingsState;
 }
 
-const TaskFinish = ({isMobile, data, onFinishTask}: TaskFinishProps) => {
+const TaskFinish = ({isMobile, data, onFinishTask, preferences}: TaskFinishProps) => {
     const [form] = Form.useForm();
     const formatTime = 'HH:mm';
     const formatDate = 'DD/MM/YYYY';
@@ -134,10 +136,11 @@ const TaskFinish = ({isMobile, data, onFinishTask}: TaskFinishProps) => {
                         <Button 
                         className={classes.actionButton} 
                         style={{marginRight: '8px'}} 
-                        type="primary" icon={<CheckOutlined />} 
+                        type="primary"
+                        icon={<CheckOutlined />} 
                         size={'medium'} 
                         onClick={onFinishTask}>
-                            <span className={classes.actionText}>Finalizar</span>
+                            {preferences.complexityLevel != 1 && (<span className={classes.actionText}>Finalizar</span>)}
                         </Button>
 
                     </HappyProvider>
@@ -148,8 +151,9 @@ const TaskFinish = ({isMobile, data, onFinishTask}: TaskFinishProps) => {
                     style={{marginRight: '8px'}} 
                     type="primary" 
                     size={'medium'} 
-                    onClick={onFinishTask}>
-                        Finalizar
+                    onClick={onFinishTask}
+                    icon={<CheckOutlined />}>
+                        {preferences.complexityLevel != 1 && (<span className={classes.actionText}>Finalizar</span>)}
                     </Button>
                 </HappyProvider>
             )}
